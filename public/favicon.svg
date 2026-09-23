@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="World Food Cuisine">
+  <rect width="32" height="32" rx="8" fill="#09090b"/>
+  <path fill="#f4f1ea" d="M5.5 14h21c.7 0 1.2.6 1.1 1.3C26.7 22 22 27 16 27S5.3 22 4.4 15.3C4.3 14.6 4.8 14 5.5 14z"/>
+  <ellipse cx="16" cy="14" rx="10.5" ry="3" fill="#e8e4dc"/>
+  <ellipse cx="16" cy="13.6" rx="7.8" ry="2" fill="#121214"/>
+</svg>
