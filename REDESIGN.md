@@ -3,20 +3,41 @@
 > **How to use:** keep this file in the repo root. Fill in §0.3 ("What only you can answer"), then tell your coding agent:
 > *"Read REDESIGN.md and start Phase 0."* In later sessions: *"Continue with the next phase in REDESIGN.md."*
 
+## Status (24 Sep 2026)
+
+Phases 0–2 and the trust, ordering, responsive, PWA and SEO work were done in
+one pass. Decisions that change the brief below:
+
+- **No ingredient traceability.** The owner's direction: the point isn't lot
+  codes or suppliers. It's that dishes are cooked in olive oil, butter or ghee,
+  masalas start from whole spices, and ingredients are whole, minimally
+  processed and free of preservatives and chemical additives. Every dish lists
+  what it's made of, component by component. Lot codes, supplier names, farms
+  and the `/trace` page are gone (`/trace` redirects to `/ingredients`).
+- **No invented business facts.** The 12 cities, named kitchens, ETAs and
+  Uber Eats / DoorDash / Grubhub listings weren't real, so they're gone
+  (`/kitchens` and `/partners` redirect to `/delivery`). Ordering starts with a
+  ZIP code; no ZIP is served until a real delivery zone is added. A clearly
+  labeled demo mode lets people try the flow. Nothing is sent or charged.
+- **Photos:** see `docs/IMAGE-AUDIT.md`. Only 8 photos match their dish, and
+  they're labeled as representative stock photos. The rest show placeholders.
+- **What's still needed from the business:** `docs/LAUNCH-CHECKLIST.md`.
+  **Adding cuisines:** `docs/EXPANSION.md`.
+
 ## 0 · Brief
 
 ### 0.1 What the repo already tells us (first pass, 24 Sep 2026 — confirm in Phase 0)
-- **What it is:** a delivery-only kitchen brand. 50 plates, 10 each from India, Nepal, Thailand, Mexico and Italy, with traceable ingredient lots on every plate. No dining room, no pickup.
-- **Who it's for (from the copy):** office workers ordering weekday lunch near the kitchen hubs (SoMa, Diridon…) and people ordering dinner at home in 12 US cities. They want authentic regional food and care where the ingredients come from.
+- **What it is:** a delivery-only food brand in preparation. 50 dishes, 10 each from India, Nepal, Thailand, Mexico and Italy, with every ingredient listed per dish. No dining room, no pickup, and not delivering yet.
+- **Who it's for (from the old copy):** office workers ordering weekday lunch and people ordering dinner at home. They want regional food and want to know what's in it. (The old copy named kitchen hubs and 12 US cities; none of those exist yet.)
 - **The ONE action:** order delivery (add to bag → checkout).
 - **Voice to keep:** terse, confident, kitchen-insider ("A kitchen. Not a restaurant."). It's the strongest thing on the site. Sharpen it; don't replace it.
-- **Pages (keep these URLs):** `/`, `/menu`, `/menu/$cuisine`, `/dish/$id`, `/checkout`, `/order/$id`, `/kitchens`, `/trace`, `/partners`
+- **Pages:** `/`, `/menu`, `/menu/$cuisine`, `/dish/$id`, `/ingredients`, `/delivery`, `/checkout`, `/order/$id`. Old URLs redirect: `/kitchens` and `/partners` → `/delivery`, `/trace` → `/ingredients`.
 - **Stack:**
   - TanStack Start (React 19, file routes in `src/routes/`) on Vite 8
   - Tailwind CSS v4, with tokens in `src/styles.css` (`@theme`)
   - Radix + shadcn-style components in `src/components/ui/`
-  - Zustand stores for cart, city and orders, saved in the browser's localStorage (`src/lib/store/`)
-  - All menu data is static, in `src/lib/food/data.ts`
+  - Zustand stores for the bag, delivery area and demo orders, saved in the browser's localStorage (`src/lib/store/`)
+  - All menu data is static, in `src/lib/food/` (`dishes.ts`, `cuisines.ts`, helpers in `data.ts`); delivery zones in `src/lib/ordering/zones.ts`
   - Production build: Nitro with the Vercel preset
 - **Origin:** scaffolded by Grok's app builder. The site doesn't use these template modules:
   - auth (better-auth + PGLite + `migrations/`)
@@ -106,7 +127,7 @@ Act as a principal product designer, senior front-end engineer, conversion copyw
   - what's already good (keep)
   - the top 10 problems, ranked by impact
   - risks
-  - a proposed design direction (one paragraph tied to the audience) with ONE signature element that makes the site memorable. One idea to evaluate: the lot-code ticket or stamp that's already central to the brand, carried through cards, the bag, and order tracking.
+  - a proposed design direction (one paragraph tied to the audience) with ONE signature element that makes the site memorable. The chosen one: the ingredient list itself, shown component by component on every dish.
   - a phased plan listing the files each phase touches
 
   Then stop and wait for my go-ahead.
@@ -117,7 +138,7 @@ Turn the inventory into tokens in `src/styles.css` (`@theme` + CSS variables), t
 - Color: semantic variables (background, surface, text, muted, primary, accent, border, success, warning, danger); one dominant brand color, one sharp accent (food needs warmth), a full neutral scale; light and dark themes unless §0.3 says dark only; contrast ≥ 4.5:1 for body text and ≥ 3:1 for large text and UI.
 - Layout: 4/8px spacing scale, consistent grid and max width, generous whitespace; consistent vertical rhythm, varied section layouts.
 - Surfaces and motion: one radius scale, subtle layered shadows, hairline borders; 150–300ms ease-out on transform/opacity only; hover effects only on devices that hover; full prefers-reduced-motion support.
-- Craft: one icon set with a consistent stroke (Lucide is already installed; never emoji), branded focus rings, tabular numbers for prices and lot codes, a designed 404 page, and an error screen that matches the brand.
+- Craft: one icon set with a consistent stroke (Lucide is already installed; never emoji), branded focus rings, tabular numbers for prices, a designed 404 page, and an error screen that matches the brand.
 - Banned clichés: purple-to-blue gradients on white; Inter/Roboto/Arial as the only typeface; everything centered; glassmorphism and blobs everywhere; unmodified component-library defaults; generic "Revolutionize your workflow" copy.
 Write DESIGN.md (tokens, components, usage rules, do's and don'ts) and add a short pointer to it in `CLAUDE.md` (create it) so future sessions stay consistent.
 
@@ -128,27 +149,34 @@ Order:
 3. Home.
 4. Menu, cuisine, and dish pages.
 5. Checkout and order tracking.
-6. Kitchens, trace, and partners.
+6. Order near me (`/delivery`) and What's in our food (`/ingredients`), which replaced Kitchens, Trace and Partners.
 
 For each page, define its job and section order, then fix hierarchy, copy, states, and responsiveness. Reuse components before creating new ones. Shorten the phone home page.
 - Check 360, 390, 430, 768, 1024, and 1440px: no horizontal scroll, nothing overlapping.
 - Touch targets ≥ 44×44px with ≥ 8px gaps; nothing works only on hover.
 - viewport-fit=cover with env(safe-area-inset-*) padding; dvh instead of vh.
-- App-like phone navigation: a bottom tab bar (≤ 5 items, e.g., Home, Menu, Trace, Bag); a sticky "Add to bag · $price" bar on dish pages and a sticky checkout bar when the bag has items.
+- App-like phone navigation: a bottom tab bar (≤ 5 items, e.g., Home, Menu, Ingredients, Bag); a sticky "Add to bag · $price" bar on dish pages and a sticky checkout bar when the bag has items.
 - Forms: input and select text ≥ 16px, correct type/inputmode/autocomplete, inline validation, errors announced with aria-live in plain language.
 - Every state designed: hover, focus-visible, pressed, disabled, loading (skeletons), empty, error, success.
 - Copy: keep the voice from §0.1. Headline ≤ 10 words stating the customer's outcome; specific CTA verbs; short paragraphs, benefits before features. Never invent testimonials, reviews, stats, logos, or awards; use placeholders like [REAL CUSTOMER QUOTE].
 
 ## 6 · Realistic photography
+
+> **Rule (24 Sep 2026):** a dish photo must be a real photo of our own plate, or
+> a stock photo labeled "Representative photo". Generated images may only be
+> used as labeled illustrations, never as a dish photo or anything that could
+> pass for our food or kitchen. The prompts below are for briefing a
+> photographer or for labeled illustrations.
+
 A) Inventory existing images. Keep the strong, correct ones and optimize them. List every wrong or duplicate photo from §0.2 #1 as a slot to replace, with the Nepal line first.
 B) Style guide: one paragraph on mood, lighting, lens feel, subjects, and a color grade matched to the palette, plus a one-sentence STYLE ANCHOR added to every prompt so all images look like one shoot (e.g., "soft natural light, warm neutral grade, muted earth tones, subtle film grain, calm and unposed").
 C) Slots to cover:
    - 50 dish photos, one per plate, each showing that exact dish
    - 5 cuisine cards
    - the home hero: a real production kitchen or plates leaving the pass, not a home kitchen
-   - kitchen, trace, and the 1200×630 share image
+   - the 1200×630 share image (currently a typographic card; see `docs/IMAGE-AUDIT.md`)
 
-   This is a delivery-only brand, so shoot some plates in the actual packaging with the lot-code label.
+   This is a delivery-only brand, so shoot some plates in the actual packaging.
 D) For each slot, give:
    - file name
    - aspect ratios (desktop + mobile crop, e.g., 16:9 and 4:5; dish cards 4:3)

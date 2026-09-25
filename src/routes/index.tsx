@@ -1,231 +1,235 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Bike, ChefHat, Clock3, Leaf, MapPinned, Package } from "lucide-react";
+import { ArrowRight, CookingPot, Droplets, MapPin, Sprout } from "lucide-react";
 import { DishCard } from "@/components/food/dish-card";
+import { DishImage } from "@/components/food/dish-image";
 import { Button } from "@/components/ui/button";
-import { cities, cityById, cuisines, featuredDishes } from "@/lib/food/data";
-import { useCity } from "@/lib/store/city";
-import { useHydrated } from "@/lib/use-hydrated";
+import {
+  collections,
+  cuisines,
+  dishById,
+  dishes,
+  featuredDishes,
+  regionLabels,
+} from "@/lib/food/data";
+import { KITCHEN_PROMISE, SITE_DESCRIPTION, pageHead } from "@/lib/site";
+import { useDeliveryArea } from "@/lib/store/delivery-area";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  head: () =>
+    pageHead({
+      title: "World food with nothing to hide",
+      description: SITE_DESCRIPTION,
+      path: "/",
+    }),
+  component: Home,
+});
+
+const PROMISE_ICONS = [Droplets, CookingPot, Sprout];
+const HERO_DISHES = ["butter-chicken", "pad-thai", "margherita"] as const;
 
 function Home() {
-  const cityId = useCity((s) => s.cityId);
-  const hydrated = useHydrated();
-  const city = cityById(hydrated ? cityId : "sf");
-  const featured = featuredDishes();
+  const openDialog = useDeliveryArea((s) => s.openDialog);
+  const hero = HERO_DISHES.map((id) => dishById[id]!);
 
   return (
     <div>
-      <section className="relative min-h-[88dvh] overflow-hidden">
-        <img
-          src="/food/hero.jpg"
-          alt="WorldFoodCuisine kitchen line"
-          className="absolute inset-0 size-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/75 to-bg/30" />
-        <div className="relative mx-auto flex min-h-[88dvh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 sm:pb-20">
-          <p className="rise text-xs font-medium tracking-widest text-primary uppercase">
-            We cook · Delivery only · No dining room
+      {/* Hero: text first, food photos beside it, never a full-screen crop. */}
+      <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:py-20 2xl:max-w-[1536px]">
+        <div>
+          <p className="rise text-sm font-medium tracking-widest text-accent uppercase">
+            5 cuisines · 50 dishes · every ingredient listed
           </p>
-          <h1 className="rise rise-2 mt-4 max-w-3xl font-display text-4xl font-semibold tracking-tight text-fg sm:text-6xl sm:leading-[1.05]">
-            A kitchen. Not a restaurant.
+          <h1 className="rise rise-2 mt-4 font-display text-[clamp(2.25rem,5.5vw,4.5rem)] leading-[1.02] font-semibold tracking-tight">
+            World food with nothing to hide.
           </h1>
-          <p className="rise rise-3 mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            Fifty authentic plates from India, Nepal, Thailand, Mexico, and Italy — cooked in our
-            kitchens, packed with named lots, sent to the door. No tables. No walk-in. SF, San Jose,
-            and ten more cities.
+          <p className="rise rise-3 mt-6 max-w-xl text-lg leading-relaxed text-muted">
+            Dishes from India, Nepal, Thailand, Mexico and Italy, cooked with olive oil, butter and
+            whole spices. Every dish lists what it’s made of, down to the spices in the masala.
           </p>
-          <div className="rise rise-4 mt-8 flex flex-wrap items-center gap-3">
+          <div className="rise rise-4 mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/menu">
-                Order delivery
-                <ArrowRight className="size-4" />
+                Explore the food
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
-              <Link to="/kitchens">See the kitchens</Link>
+            <Button size="lg" variant="secondary" onClick={openDialog}>
+              <MapPin className="size-4" aria-hidden="true" />
+              Order near me
             </Button>
-            <p className="w-full text-sm text-muted sm:ml-2 sm:w-auto">
-              {city.name} · {city.hub} · about {city.eta} min to the door
+          </div>
+          <p className="mt-4 text-sm text-subtle">
+            We’re not delivering yet. Check your ZIP code to see if we reach you.
+          </p>
+        </div>
+
+        <div>
+          <div className="grid grid-cols-3 gap-3 lg:grid-cols-2 lg:grid-rows-2">
+            {hero.map((dish, i) => (
+              <Link
+                key={dish.id}
+                to="/dish/$id"
+                params={{ id: dish.id }}
+                className={i === 0 ? "lg:row-span-2" : ""}
+                aria-label={dish.name}
+              >
+                <DishImage
+                  dish={dish}
+                  label="none"
+                  priority={i === 0}
+                  sizes="(min-width: 1024px) 25vw, 33vw"
+                  className={
+                    i === 0
+                      ? "aspect-square rounded-2xl lg:aspect-auto lg:h-full"
+                      : "aspect-square rounded-2xl lg:aspect-[4/3]"
+                  }
+                />
+              </Link>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-subtle">
+            Representative photos: typical versions of these dishes, not photos of our food.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="promise" className="border-y border-border bg-surface">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 2xl:max-w-[1536px]">
+          <h2 id="promise" className="font-display text-3xl font-semibold tracking-tight">
+            What goes into the food
+          </h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {KITCHEN_PROMISE.map((p, i) => {
+              const Icon = PROMISE_ICONS[i] ?? Sprout;
+              return (
+                <div key={p.title}>
+                  <Icon className="size-6 text-accent" strokeWidth={1.5} aria-hidden="true" />
+                  <h3 className="mt-3 font-display text-xl font-semibold tracking-tight">
+                    {p.title}
+                  </h3>
+                  <p className="mt-2 leading-relaxed text-muted">{p.body}</p>
+                </div>
+              );
+            })}
+          </div>
+          <Link
+            to="/ingredients"
+            className="mt-8 inline-flex items-center gap-2 font-medium text-fg underline-offset-4 hover:underline"
+          >
+            How we list ingredients
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="cuisines"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 2xl:max-w-[1536px]"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2
+              id="cuisines"
+              className="font-display text-3xl font-semibold tracking-tight sm:text-4xl"
+            >
+              Explore five cuisines
+            </h2>
+            <p className="mt-2 max-w-xl text-muted">
+              Ten dishes from each, with the story behind them and everything they’re made of.
             </p>
           </div>
-        </div>
-      </section>
-
-      <section className="border-t border-border">
-        <div className="mx-auto grid max-w-6xl gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              n: "01",
-              icon: ChefHat,
-              title: "We cook",
-              body: "Five authentic lines on one pass. Tandoor, momo, wok, nixtamal, fire.",
-            },
-            {
-              n: "02",
-              icon: Package,
-              title: "We pack",
-              body: "Sealed bags, lot-stamped. Built to travel — not to sit on a table.",
-            },
-            {
-              n: "03",
-              icon: Bike,
-              title: "We deliver",
-              body: "Our kitchen, a rider, your door. No host stand. No pickup window.",
-            },
-            {
-              n: "04",
-              icon: MapPinned,
-              title: "You don't come in",
-              body: "Addresses are for riders. The dining room does not exist — on purpose.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="bg-bg px-6 py-10">
-              <p className="text-xs tabular-nums text-subtle">{item.n}</p>
-              <item.icon className="mt-4 size-5 text-primary" strokeWidth={1.5} />
-              <h2 className="mt-4 font-display text-xl font-semibold tracking-tight">{item.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-b border-border bg-surface">
-        <div className="mx-auto grid max-w-6xl gap-px sm:grid-cols-3">
-          {[
-            {
-              icon: Leaf,
-              title: "Named origins",
-              body: "Every spice, farm, and mill is on the ticket. Lot codes you can actually read.",
-            },
-            {
-              icon: Clock3,
-              title: "Hub lunch money",
-              body: "Weekday plates from $8.90. The desk order that replaces walking out for lunch.",
-            },
-            {
-              icon: MapPinned,
-              title: "Twelve US cities",
-              body: "Same menu, same lots, same delivery promise — starting in SF and San Jose.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="px-6 py-10">
-              <item.icon className="size-5 text-primary" strokeWidth={1.5} />
-              <h2 className="mt-4 font-display text-xl font-semibold tracking-tight">{item.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium tracking-widest text-subtle uppercase">The line</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              Five countries. Ten plates each.
-            </h2>
-          </div>
-          <Button asChild variant="ghost" className="hidden sm:inline-flex">
+          <Button asChild variant="ghost">
             <Link to="/menu">
-              Full menu
-              <ArrowRight className="size-4" />
+              All {dishes.length} dishes
+              <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </Button>
         </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {cuisines.map((c) => (
-            <Link
-              key={c.id}
-              to="/menu/$cuisine"
-              params={{ cuisine: c.id }}
-              className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-border)]"
-            >
-              <img
-                src={c.image}
-                alt=""
-                className="food-frame size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-4">
-                <p className="text-xs text-muted">{c.native}</p>
-                <p className="font-display text-2xl font-semibold tracking-tight">{c.name}</p>
-                <p className="mt-1 line-clamp-2 text-xs text-muted">{c.blurb}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-y border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium tracking-widest text-subtle uppercase">Kitchen picks</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              What the pass is sending tonight.
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((dish) => (
-              <DishCard key={dish.id} dish={dish} large />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2">
-        <div>
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">The hub box</p>
-          <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Built for SoMa, Diridon, and every floor that forgot to cook.
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-muted">
-            Weekday lunch 11:00–14:30. You order. We cook. A rider hits the lobby. No restaurant wait,
-            no walking down the block — and you can still tap Uber Eats or DoorDash if that tab is
-            already open.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm text-muted">
-            <li>Delivery only — there is no pickup</li>
-            <li>Hub lunch tags from $8.90–$14.90</li>
-            <li>Free delivery over $35 · twelve cities</li>
-          </ul>
-          <Button asChild className="mt-8" size="lg">
-            <Link to="/menu">
-              Order the hub lunch
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </div>
-        <img
-          src="/food/kitchen.jpg"
-          alt="Dispatch kitchen at dusk"
-          className="food-frame aspect-[4/3] w-full rounded-2xl object-cover"
-        />
-      </section>
-
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">Cities</p>
-          <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Live kitchens</h2>
-          <p className="mt-2 max-w-xl text-sm text-muted">
-            Ghost kitchens. Riders welcome. Guests are not — there is nowhere to sit.
-          </p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {cities.map((c) => (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {cuisines.map((c) => {
+            const cover = dishById[c.coverDishId]!;
+            return (
               <Link
                 key={c.id}
-                to="/kitchens"
-                className="flex items-center justify-between rounded-xl bg-surface px-4 py-4 shadow-[var(--shadow-border)] transition-[box-shadow] duration-150 hover:shadow-[var(--shadow-border-hover)]"
+                to="/menu/$cuisine"
+                params={{ cuisine: c.id }}
+                className="group flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-border)] hover:shadow-[var(--shadow-border-hover)]"
               >
-                <div>
-                  <p className="font-medium">
-                    {c.name}, {c.state}
-                  </p>
-                  <p className="text-xs text-muted">{c.hub}</p>
+                <DishImage
+                  dish={cover}
+                  sizes="(min-width: 1280px) 20vw, (min-width: 640px) 50vw, 100vw"
+                  className="aspect-[4/3]"
+                  imgClassName="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                />
+                <div className="flex flex-1 flex-col p-4">
+                  <p className="text-xs text-subtle">{regionLabels[c.region]}</p>
+                  <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+                    {c.name}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{c.blurb}</p>
                 </div>
-                <p className="text-sm tabular-nums text-muted">{c.eta} min</p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section aria-labelledby="collections" className="border-y border-border bg-surface">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 2xl:max-w-[1536px]">
+          <h2 id="collections" className="font-display text-3xl font-semibold tracking-tight">
+            Collections
+          </h2>
+          <p className="mt-2 text-muted">Dishes grouped across the five cuisines.</p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {collections.map((col) => (
+              <Link
+                key={col.id}
+                to="/menu"
+                search={{ collection: col.id }}
+                className="rounded-2xl bg-elevated p-5 shadow-[var(--shadow-border)] hover:shadow-[var(--shadow-border-hover)]"
+              >
+                <h3 className="font-display text-xl font-semibold tracking-tight">{col.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{col.blurb}</p>
+                <p className="mt-4 text-sm font-medium text-accent">{col.dishIds.length} dishes</p>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="picks"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 2xl:max-w-[1536px]"
+      >
+        <h2 id="picks" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          A few of the fifty
+        </h2>
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {featuredDishes().map((dish) => (
+            <DishCard key={dish.id} dish={dish} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="order" className="border-t border-border bg-surface">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between 2xl:max-w-[1536px]">
+          <div className="max-w-2xl">
+            <h2 id="order" className="font-display text-3xl font-semibold tracking-tight">
+              Order near me
+            </h2>
+            <p className="mt-2 leading-relaxed text-muted">
+              We’re not delivering anywhere yet. When a kitchen opens, ordering will start from your
+              ZIP code, with real prices, fees and delivery times for your area.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button size="lg" onClick={openDialog}>
+              <MapPin className="size-4" aria-hidden="true" />
+              Check your ZIP
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <Link to="/delivery">How ordering works</Link>
+            </Button>
           </div>
         </div>
       </section>

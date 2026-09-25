@@ -1,58 +1,68 @@
 import { Link } from "@tanstack/react-router";
 import { Wordmark } from "@/components/brand/logo";
+import { cuisines, dishes } from "@/lib/food/data";
+import { KITCHEN_PROMISE } from "@/lib/site";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
+    <footer className="border-t border-border bg-surface pb-safe">
+      <div className="mx-auto grid max-w-7xl gap-10 2xl:max-w-[1536px] px-4 py-14 sm:px-6 md:grid-cols-12">
+        <div className="md:col-span-5">
           <Wordmark />
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-            Fifty authentic plates from five kitchens. We cook, we pack, we deliver — no restaurant,
-            no walk-in. Named farms. Twelve US cities.
-          </p>
+          <ul className="mt-5 space-y-2 text-sm leading-relaxed text-muted">
+            {KITCHEN_PROMISE.map((p) => (
+              <li key={p.title}>
+                <span className="font-medium text-fg">{p.title}.</span> {p.body}
+              </li>
+            ))}
+          </ul>
         </div>
-        <div>
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">Kitchen</p>
+        <nav aria-label="Menu" className="md:col-span-3">
+          <p className="text-sm font-medium text-fg">Explore</p>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
               <Link to="/menu" className="text-muted hover:text-fg">
-                Full menu
+                All {dishes.length} dishes
+              </Link>
+            </li>
+            {cuisines.map((c) => (
+              <li key={c.id}>
+                <Link
+                  to="/menu/$cuisine"
+                  params={{ cuisine: c.id }}
+                  className="text-muted hover:text-fg"
+                >
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <nav aria-label="About" className="md:col-span-4">
+          <p className="text-sm font-medium text-fg">Ordering</p>
+          <ul className="mt-4 space-y-2 text-sm">
+            <li>
+              <Link to="/delivery" className="text-muted hover:text-fg">
+                Order near me
               </Link>
             </li>
             <li>
-              <Link to="/trace" className="text-muted hover:text-fg">
-                Ingredient lots
-              </Link>
-            </li>
-            <li>
-              <Link to="/kitchens" className="text-muted hover:text-fg">
-                Cities
-              </Link>
-            </li>
-            <li>
-              <Link to="/partners" className="text-muted hover:text-fg">
-                Uber Eats & DoorDash
+              <Link to="/ingredients" className="text-muted hover:text-fg">
+                What’s in our food
               </Link>
             </li>
           </ul>
-        </div>
-        <div>
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">Service</p>
-          <ul className="mt-4 space-y-2 text-sm text-muted">
-            <li>Delivery only — no dining room</li>
-            <li>No walk-in · no pickup</li>
-            <li>Lunch 11:00–14:30</li>
-            <li>Dinner 17:00–22:00</li>
-            <li>Free over $35</li>
-          </ul>
-        </div>
+          <p className="mt-6 text-sm leading-relaxed text-subtle">
+            We’re not delivering yet. Photos marked “Representative photo” are stock images of a
+            typical version of a dish, not photos of our food. “Photo coming soon” means we haven’t
+            photographed that dish yet.
+          </p>
+        </nav>
       </div>
       <div className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>© {new Date().getFullYear()} WorldFoodCuisine. Delivery kitchens, USA.</p>
-          <p>Origin spices. American farms. One ticket.</p>
-        </div>
+        <p className="mx-auto max-w-7xl px-4 py-6 2xl:max-w-[1536px] text-xs text-subtle sm:px-6">
+          © {new Date().getFullYear()} WorldFoodCuisine
+        </p>
       </div>
     </footer>
   );

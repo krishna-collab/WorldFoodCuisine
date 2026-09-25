@@ -157,13 +157,18 @@ export default defineConfig(({ command, isPreview }) => ({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  define: {
+    // Dish photos go through Vercel Image Optimization (resized, AVIF/WebP)
+    // only on Vercel builds; local dev and preview serve the originals.
+    __VERCEL_IMAGES__: JSON.stringify(Boolean(process.env.VERCEL)),
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
     authPopupPlugin(),
     // Dev-only /__app-env, read by scripts/check-auth-invariant.mjs.
     appEnvPlugin(),
-    // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
+    // Manifest + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
     tanstackStart(),
@@ -172,9 +177,21 @@ export default defineConfig(({ command, isPreview }) => ({
           nitro({
             preset: "vercel",
             // Auto-registers server/middleware/* (the PWA install page +
-            // manifest + head-tag middleware). Nitro v3 defaults serverDir to
-            // false, so removing this silently unwires /?install=1 on deploys.
+            // manifest middleware). Nitro v3 defaults serverDir to false, so
+            // removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
+            vercel: {
+              config: {
+                version: 3,
+                // Must list every width src/lib/food/images.ts asks for.
+                images: {
+                  sizes: [256, 384, 640, 828, 1080, 1200, 1920],
+                  domains: [],
+                  formats: ["image/avif", "image/webp"],
+                  minimumCacheTTL: 2592000,
+                },
+              },
+            },
           }),
         ]
       : []),

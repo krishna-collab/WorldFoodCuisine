@@ -8,17 +8,14 @@
  *   static output on Vercel and not readable from the function).
  * - `/__grok/manifest.webmanifest` → per-app-named manifest (kept out of
  *   public/ so this dynamic response is the only one).
- * - Other HTML documents → stream-inject PWA + OG head tags at `</head>`.
- *   OG identity is baked via `virtual:grok-og-identity` at `vite build`
- *   (this function cannot read `src/lib/og/site.json` or `public/og.jpg`).
- *   This must be a middleware transforming `next()`: h3 discards the `response`
- *   runtime hook's return value, and `render:html` does not exist in Nitro v3.
+ * - Every other request passes through untouched. HTML documents are NOT
+ *   rewritten: the app sets its own PWA tags and per-page title, description
+ *   and share tags in src/routes, and the old injection replaced those with
+ *   one site-wide card and added a third-party banner script to every page.
  */
 import installPageTemplate from "../../scripts/install-page.html?raw";
-import { grokOgIdentity } from "virtual:grok-og-identity";
 import {
   acceptsHtml,
-  createHeadInjector,
   isDocumentPath,
   isInstallQuery,
   renderInstallPageHtml,
@@ -36,34 +33,10 @@ function requestHost(event: GrokPwaEvent): string {
   );
 }
 
-function injectHeadStreaming(response: Response, host: string): Response {
-  const injector = createHeadInjector({
-    host,
-    site: grokOgIdentity.site,
-  });
-  const transformed = response.body!.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      transform(chunk, controller) {
-        for (const out of injector.push(chunk)) controller.enqueue(out);
-      },
-      flush(controller) {
-        for (const out of injector.flush()) controller.enqueue(out);
-      },
-    }),
-  );
-  const headers = new Headers(response.headers);
-  headers.delete("content-length");
-  return new Response(transformed, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
-export default async function grokPwaMiddleware(
+export default function grokPwaMiddleware(
   event: GrokPwaEvent,
   next: () => unknown | Promise<unknown>,
-): Promise<unknown> {
+): unknown {
   const method = (event.req.method ?? "GET").toUpperCase();
   if (method !== "GET") return next();
 
@@ -96,16 +69,5 @@ export default async function grokPwaMiddleware(
     });
   }
 
-  if (!isDocumentPath(path)) return next();
-
-  const result = await next();
-  if (
-    result instanceof Response &&
-    result.body &&
-    String(result.headers.get("content-type") ?? "").includes("text/html") &&
-    !result.headers.get("content-encoding")
-  ) {
-    return injectHeadStreaming(result, requestHost(event));
-  }
-  return result;
+  return next();
 }

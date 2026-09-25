@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /order/
+
+Sitemap: https://world-food-cuisine.vercel.app/sitemap.xml

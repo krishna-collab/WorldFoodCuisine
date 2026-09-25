@@ -1,56 +1,84 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { DishCard } from "@/components/food/dish-card";
+import { DishImage } from "@/components/food/dish-image";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cuisineById, dishesByCuisine } from "@/lib/food/data";
-import type { CuisineId } from "@/lib/food/types";
+import {
+  cuisineById,
+  cuisineLang,
+  dishById,
+  dishesByCuisine,
+  isCuisineId,
+  regionLabels,
+} from "@/lib/food/data";
+import { pageHead } from "@/lib/site";
 
-export const Route = createFileRoute("/menu/$cuisine")({ component: CuisinePage });
-
-const IDS: CuisineId[] = ["india", "nepal", "thailand", "mexico", "italy"];
+export const Route = createFileRoute("/menu/$cuisine")({
+  beforeLoad: ({ params }) => {
+    if (!isCuisineId(params.cuisine)) throw notFound();
+  },
+  head: ({ params }) => {
+    const cuisine = isCuisineId(params.cuisine) ? cuisineById[params.cuisine] : undefined;
+    if (!cuisine) return {};
+    return pageHead({
+      title: `${cuisine.name} (${cuisine.native}): 10 dishes`,
+      description: cuisine.story,
+      path: `/menu/${cuisine.id}`,
+    });
+  },
+  component: CuisinePage,
+});
 
 function CuisinePage() {
-  const { cuisine } = Route.useParams();
-  const id = cuisine as CuisineId;
-  const meta = IDS.includes(id) ? cuisineById[id] : undefined;
-
-  if (!meta) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <h1 className="font-display text-3xl font-semibold">Kitchen not on the line</h1>
-        <Button asChild className="mt-8">
-          <Link to="/menu">See the menu</Link>
-        </Button>
-      </div>
-    );
-  }
-
+  const { cuisine: id } = Route.useParams();
+  if (!isCuisineId(id)) return null;
+  const cuisine = cuisineById[id];
+  const cover = dishById[cuisine.coverDishId]!;
   const list = dishesByCuisine(id);
 
   return (
-    <div>
-      <section className="relative h-72 overflow-hidden sm:h-96">
-        <img src={meta.image} alt="" className="size-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-bg/20" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-4 pb-8 sm:px-6">
-          <Button asChild variant="ghost" size="sm" className="mb-4 -ml-3">
-            <Link to="/menu">
-              <ArrowLeft className="size-4" />
-              All kitchens
-            </Link>
-          </Button>
-          <p className="text-sm text-muted">{meta.native}</p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{meta.name}</h1>
-          <p className="mt-2 max-w-xl text-muted">{meta.blurb}</p>
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 2xl:max-w-[1536px]">
+      <Button asChild variant="ghost" size="sm" className="-ml-3">
+        <Link to="/menu">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          All dishes
+        </Link>
+      </Button>
+
+      <section className="mt-4 grid items-center gap-8 lg:grid-cols-[1.1fr_1fr]">
+        <div>
+          <p className="text-sm text-subtle">{regionLabels[cuisine.region]}</p>
+          <h1 className="mt-2 font-display text-5xl font-semibold tracking-tight sm:text-6xl">
+            {cuisine.name}
+          </h1>
+          <p className="mt-1 text-xl text-muted" lang={cuisineLang[id]}>
+            {cuisine.native}
+          </p>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">{cuisine.story}</p>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Traditions on this menu">
+            {cuisine.traditions.map((t) => (
+              <li key={t}>
+                <Badge>{t}</Badge>
+              </li>
+            ))}
+          </ul>
         </div>
+        <DishImage
+          dish={cover}
+          priority
+          sizes="(min-width: 1024px) 45vw, 100vw"
+          className="aspect-[4/3] rounded-2xl"
+        />
       </section>
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <p className="max-w-2xl text-sm leading-relaxed text-muted">{meta.kitchenNote}</p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((dish) => (
-            <DishCard key={dish.id} dish={dish} />
-          ))}
-        </div>
+
+      <h2 className="mt-16 font-display text-3xl font-semibold tracking-tight">
+        Ten dishes from {cuisine.name}
+      </h2>
+      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {list.map((dish) => (
+          <DishCard key={dish.id} dish={dish} />
+        ))}
       </div>
     </div>
   );
