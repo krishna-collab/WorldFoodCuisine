@@ -6,7 +6,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export const DEFAULT_APP_NAME = "Grok App";
+export const DEFAULT_APP_NAME = "WorldFoodCuisine";
+/** Home-screen label: short enough that iOS and Android don't cut it off. */
+export const APP_SHORT_NAME = "WorldFood";
+/** Keep in sync with the theme-color meta in src/routes/__root.tsx. */
+export const APP_THEME_COLOR = "#09090b";
 export const OG_SERVICE_URL_DEFAULT = "https://og.grok.me";
 export const OG_SITE_REL_PATH = "src/lib/og/site.json";
 
@@ -162,18 +166,34 @@ export function renderWebManifest(hostHeader) {
   return JSON.stringify(
     {
       name,
-      short_name: name,
+      short_name: name === DEFAULT_APP_NAME ? APP_SHORT_NAME : name,
       id: "/",
       start_url: "/",
       scope: "/",
       display: "standalone",
-      background_color: "#000000",
-      theme_color: "#000000",
+      background_color: APP_THEME_COLOR,
+      theme_color: APP_THEME_COLOR,
       icons: [
         {
           src: "/__grok/icon-180.png",
           sizes: "180x180",
           type: "image/png",
+        },
+        {
+          src: "/__grok/icon-192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/__grok/icon-512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+        {
+          src: "/__grok/icon-maskable-512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
         },
       ],
     },
@@ -196,7 +216,7 @@ export function grokPwaHeadTags(appName = DEFAULT_APP_NAME) {
       "apple-mobile-web-app-status-bar-style",
       '<meta name="apple-mobile-web-app-status-bar-style" content="black">',
     ],
-    ["theme-color", '<meta name="theme-color" content="#000000">'],
+    ["theme-color", `<meta name="theme-color" content="${APP_THEME_COLOR}">`],
   ];
 }
 
