@@ -19,6 +19,9 @@ export const Route = createRootRoute({
           "Authentic Indian, Nepali, Thai, Mexican, and Italian plates. Traceable ingredients. Delivery kitchens across the USA.",
       },
       { name: "theme-color", content: "#09090b" },
+      // Home-screen label on iPhone. Matches the manifest short_name so the
+      // name isn't cut off; see APP_SHORT_NAME in scripts/grok-pwa-shared.mjs.
+      { name: "apple-mobile-web-app-title", content: "WorldFood" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
