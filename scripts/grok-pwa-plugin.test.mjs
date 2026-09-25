@@ -449,14 +449,14 @@ test("strips install params from the app link", () => {
 });
 
 test("names the install page from host slug", () => {
-  assert.equal(appNameFromHost("localhost:8080"), "Grok App");
-  assert.equal(appNameFromHost("172.17.154.217:8080"), "Grok App");
+  assert.equal(appNameFromHost("localhost:8080"), "WorldFoodCuisine");
+  assert.equal(appNameFromHost("172.17.154.217:8080"), "WorldFoodCuisine");
   assert.equal(appNameFromHost("wild-race.grok.me"), "Wild Race");
 });
 
 test("rejects hosts that are not plain slugs", () => {
-  assert.equal(appNameFromHost("<script>alert(1)</script>"), "Grok App");
-  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "Grok App");
+  assert.equal(appNameFromHost("<script>alert(1)</script>"), "WorldFoodCuisine");
+  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "WorldFoodCuisine");
 });
 
 test("renders install page markup", () => {
@@ -478,6 +478,25 @@ test("renders the manifest with the per-app name", () => {
   assert.equal(manifest.name, "Wild Race");
   assert.equal(manifest.short_name, "Wild Race");
   assert.equal(manifest.icons[0].src, "/__grok/icon-180.png");
+});
+
+test("renders the WorldFoodCuisine manifest on its own domains", () => {
+  const manifest = JSON.parse(renderWebManifest("world-food-cuisine.vercel.app"));
+  assert.equal(manifest.name, "WorldFoodCuisine");
+  assert.equal(manifest.short_name, "WorldFood");
+  assert.equal(manifest.theme_color, "#09090b");
+  assert.equal(manifest.background_color, "#09090b");
+  const sizes = manifest.icons.map((icon) => icon.sizes);
+  assert.ok(sizes.includes("192x192"));
+  assert.ok(sizes.includes("512x512"));
+  assert.ok(manifest.icons.some((icon) => icon.purpose === "maskable"));
+  for (const icon of manifest.icons) {
+    const png = readFileSync(join(TEMPLATE_ROOT, "public", icon.src));
+    const [width, height] = icon.sizes.split("x").map(Number);
+    // PNG IHDR: width and height are big-endian uint32s at bytes 16 and 20.
+    assert.equal(png.readUInt32BE(16), width, icon.src);
+    assert.equal(png.readUInt32BE(20), height, icon.src);
+  }
 });
 
 // Tripwires: the deployed-app path only works if Nitro scans server/ — an
