@@ -1,51 +1,64 @@
 import { Link } from "@tanstack/react-router";
-import { cuisineById, dietLabels } from "@/lib/food/data";
+import { cuisineById, dietLabels, localNameLang, spiceLabel } from "@/lib/food/data";
 import type { Dish } from "@/lib/food/types";
-import { formatPrice } from "@/lib/utils";
-import { AddButton } from "./add-button";
+import { AddButton, DishPrice } from "./add-button";
+import { DishImage } from "./dish-image";
 
-export function DishCard({ dish, large = false }: { dish: Dish; large?: boolean }) {
+type DishCardProps = {
+  dish: Dish;
+  /** Ingredient that made this dish match a search, shown under the story. */
+  ingredientMatch?: string;
+  priority?: boolean;
+  headingLevel?: "h2" | "h3";
+};
+
+export function DishCard({ dish, ingredientMatch, priority, headingLevel = "h3" }: DishCardProps) {
   const cuisine = cuisineById[dish.cuisine];
+  const Heading = headingLevel;
+  const facts = [
+    cuisine.name,
+    ...dish.diet.map((d) => dietLabels[d]),
+    dish.spice > 0 ? spiceLabel[dish.spice] : null,
+  ].filter(Boolean);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-border)] transition-[box-shadow,transform] duration-200 ease-out hover:shadow-[var(--shadow-border-hover)]">
-      <Link to="/dish/$id" params={{ id: dish.id }} className="block">
-        <div className={large ? "relative aspect-[4/3] overflow-hidden" : "relative aspect-[4/3] overflow-hidden sm:aspect-[5/4]"}>
-          <img
-            src={dish.image ?? cuisine.image}
-            alt={dish.name}
-            className="food-frame size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          />
-          <span className="absolute top-3 left-3 inline-flex h-7 items-center rounded-full bg-bg/80 px-2.5 text-xs font-medium text-fg backdrop-blur-sm">
-            {cuisine.name}
-          </span>
-        </div>
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-border)] transition-shadow duration-200 ease-out [@media(hover:hover)]:hover:shadow-[var(--shadow-border-hover)]">
+      <Link to="/dish/$id" params={{ id: dish.id }} tabIndex={-1} aria-hidden="true">
+        <DishImage
+          dish={dish}
+          className="aspect-[4/3]"
+          imgClassName="transition-transform duration-500 ease-out [@media(hover:hover)]:group-hover:scale-[1.03]"
+          sizes="(min-width: 1280px) 400px, (min-width: 640px) 50vw, 100vw"
+          priority={priority}
+        />
       </Link>
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <Link
-              to="/dish/$id"
-              params={{ id: dish.id }}
-              className="font-display text-lg font-semibold tracking-tight text-fg hover:opacity-80"
-            >
-              {dish.name}
-            </Link>
-            <p className="mt-0.5 text-xs text-muted">{dish.localName}</p>
+            <Heading className="font-display text-lg leading-snug font-semibold tracking-tight">
+              <Link
+                to="/dish/$id"
+                params={{ id: dish.id }}
+                className="text-fg after:absolute after:inset-0 after:content-[''] focus-visible:outline-none [@media(hover:hover)]:hover:opacity-85"
+              >
+                {dish.name}
+              </Link>
+            </Heading>
+            <p className="mt-0.5 text-sm text-muted" lang={localNameLang(dish)} dir="auto">
+              {dish.localName}
+            </p>
           </div>
-          <p className="shrink-0 font-medium tabular-nums text-fg">{formatPrice(dish.price)}</p>
+          <DishPrice dish={dish} />
         </div>
-        <p className="line-clamp-2 flex-1 text-sm leading-relaxed text-muted">{dish.description}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {dish.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-xs text-subtle">
-              {dietLabels[tag]}
-            </span>
-          ))}
-        </div>
-        <div className="mt-auto flex items-center justify-between gap-3 pt-1">
-          <p className="text-xs text-subtle">{dish.prepMinutes} min fire</p>
-          <AddButton dishId={dish.id} />
+        <p className="line-clamp-2 text-sm leading-relaxed text-muted">{dish.story}</p>
+        {ingredientMatch ? (
+          <p className="text-sm text-accent">Contains {ingredientMatch.toLowerCase()}</p>
+        ) : null}
+        <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+          <p className="min-w-0 text-xs text-subtle">{facts.join(" · ")}</p>
+          <div className="relative z-10 shrink-0">
+            <AddButton dish={dish} />
+          </div>
         </div>
       </div>
     </article>

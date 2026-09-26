@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem } from "@/lib/food/types";
-import { DELIVERY_FEE, FREE_DELIVERY_AT, dishById } from "@/lib/food/data";
+import { dishById } from "@/lib/food/data";
 
 type CartState = {
   items: CartItem[];
@@ -58,9 +58,4 @@ export function cartSubtotal(items: CartItem[]) {
     const dish = dishById[i.dishId];
     return n + (dish ? dish.price * i.qty : 0);
   }, 0);
-}
-
-export function cartDelivery(subtotal: number) {
-  if (subtotal === 0) return 0;
-  return subtotal >= FREE_DELIVERY_AT ? 0 : DELIVERY_FEE;
 }

@@ -1,114 +1,164 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { AddButton } from "@/components/food/add-button";
 import { DishCard } from "@/components/food/dish-card";
+import { DishImage } from "@/components/food/dish-image";
+import { WhatsInIt } from "@/components/food/whats-in-it";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cuisineById, dietLabels, dishById, dishesByCuisine, spiceLabel } from "@/lib/food/data";
+import {
+  courseLabels,
+  cuisineById,
+  dietLabels,
+  dishById,
+  dishesByCuisine,
+  localNameLang,
+  spiceLabel,
+} from "@/lib/food/data";
+import { pageHead } from "@/lib/site";
+import { useAreaStatus } from "@/lib/store/delivery-area";
 import { formatPrice } from "@/lib/utils";
+import type { Dish } from "@/lib/food/types";
 
-export const Route = createFileRoute("/dish/$id")({ component: DishPage });
+export const Route = createFileRoute("/dish/$id")({
+  beforeLoad: ({ params }) => {
+    if (!dishById[params.id]) throw notFound();
+  },
+  head: ({ params }) => {
+    const dish = dishById[params.id];
+    if (!dish) return {};
+    return pageHead({
+      title: `${dish.name} (${dish.localName})`,
+      description: dish.story,
+      // Share previews use the brand card: a stock photo or AI image there would
+      // carry no label and could pass for our food.
+      path: `/dish/${dish.id}`,
+    });
+  },
+  component: DishPage,
+});
+
+function Availability({ dish }: { dish: Dish }) {
+  const area = useAreaStatus();
+  return (
+    <div className="mt-8 rounded-2xl bg-surface p-5 shadow-[var(--shadow-border)]">
+      {area.kind === "served" ? (
+        <>
+          <p className="font-display text-3xl font-semibold tabular-nums">
+            {formatPrice(dish.price)}
+            {area.zone.demo ? (
+              <span className="ml-2 align-middle text-sm font-normal text-warn-fg">demo price</span>
+            ) : null}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Delivering to {area.postalCode} in about {area.zone.etaMinutes[0]}–
+            {area.zone.etaMinutes[1]} min.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="font-medium">
+            {area.kind === "unserved"
+              ? `Not delivering to ${area.postalCode} yet`
+              : "Not on sale yet"}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            We’re not delivering yet. Prices and delivery times appear once your ZIP code is in a
+            delivery area.
+          </p>
+        </>
+      )}
+      <AddButton
+        dish={dish}
+        size="lg"
+        withPrice={area.kind === "served"}
+        className="mt-4 w-full sm:w-auto"
+      />
+    </div>
+  );
+}
 
 function DishPage() {
   const { id } = Route.useParams();
   const dish = dishById[id];
-
-  if (!dish) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <h1 className="font-display text-3xl font-semibold">Plate not on tonight’s line</h1>
-        <Button asChild className="mt-8">
-          <Link to="/menu">See the menu</Link>
-        </Button>
-      </div>
-    );
-  }
-
+  if (!dish) return null;
   const cuisine = cuisineById[dish.cuisine];
-  const related = dishesByCuisine(dish.cuisine).filter((d) => d.id !== dish.id).slice(0, 3);
+  const related = dishesByCuisine(dish.cuisine)
+    .filter((d) => d.id !== dish.id)
+    .sort((a, b) => Number(b.image.kind !== "placeholder") - Number(a.image.kind !== "placeholder"))
+    .slice(0, 3);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <Button asChild variant="ghost" size="sm" className="-ml-3 mb-6">
+    <div className="mx-auto max-w-7xl px-4 pt-8 pb-28 sm:px-6 sm:pb-16 2xl:max-w-[1536px]">
+      <Button asChild variant="ghost" size="sm" className="-ml-3">
         <Link to="/menu/$cuisine" params={{ cuisine: dish.cuisine }}>
-          <ArrowLeft className="size-4" />
+          <ArrowLeft className="size-4" aria-hidden="true" />
           {cuisine.name}
         </Link>
       </Button>
 
-      <div className="grid gap-10 lg:grid-cols-2">
-        <img
-          src={dish.image ?? cuisine.image}
-          alt={dish.name}
-          className="food-frame aspect-[4/3] w-full rounded-2xl object-cover"
+      <div className="mt-4 grid gap-8 lg:grid-cols-2 lg:gap-12">
+        <DishImage
+          dish={dish}
+          priority
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="aspect-[4/3] rounded-2xl"
         />
         <div>
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">{cuisine.name}</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">{dish.name}</h1>
-          <p className="mt-1 text-muted">{dish.localName}</p>
-          <p className="mt-6 text-base leading-relaxed text-muted">{dish.description}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {dish.tags.map((tag) => (
-              <Badge key={tag}>{dietLabels[tag]}</Badge>
+          <p className="text-sm text-subtle">
+            {[cuisine.name, dish.tradition, courseLabels[dish.course]].filter(Boolean).join(" · ")}
+          </p>
+          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+            {dish.name}
+          </h1>
+          <p className="mt-1 text-xl text-muted" lang={localNameLang(dish)} dir="auto">
+            {dish.localName}
+          </p>
+          <p className="mt-6 text-lg leading-relaxed text-muted">{dish.story}</p>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Diet and heat">
+            {dish.diet.map((d) => (
+              <li key={d}>
+                <Badge tone="accent">{dietLabels[d]}</Badge>
+              </li>
             ))}
-            <Badge>{spiceLabel[dish.spice]}</Badge>
-            <Badge>{dish.calories} kcal</Badge>
-            <Badge>{dish.prepMinutes} min</Badge>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <p className="font-display text-3xl font-semibold tabular-nums">{formatPrice(dish.price)}</p>
-            <AddButton dishId={dish.id} size="lg" />
-          </div>
+            <li>
+              <Badge>{spiceLabel[dish.spice]}</Badge>
+            </li>
+          </ul>
+          <Availability dish={dish} />
         </div>
       </div>
 
-      <section className="mt-16">
-        <h2 className="font-display text-2xl font-semibold tracking-tight">Traceable lots</h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Origin spices and specialty goods from named co-ops. Produce, dairy, and meat from US
-          partner farms. Every bag is stamped with these lots.
+      <WhatsInIt dish={dish} />
+
+      {dish.image.kind === "representative" ? (
+        <p className="mt-6 text-sm text-subtle">
+          About the photo: a stock image of a typical {dish.name}, not a photo of our food. Source
+          and license are still being confirmed.{dish.image.note ? ` ${dish.image.note}` : ""}
         </p>
-        <div className="mt-6 overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-border)]">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs tracking-wide text-subtle uppercase">
-              <tr>
-                <th className="px-4 py-3 font-medium">Ingredient</th>
-                <th className="hidden px-4 py-3 font-medium sm:table-cell">Origin</th>
-                <th className="px-4 py-3 font-medium">Lot</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dish.ingredients.map((ing) => (
-                <tr key={ing.lot} className="border-b border-border last:border-0">
-                  <td className="px-4 py-4">
-                    <p className="font-medium">{ing.name}</p>
-                    <p className="text-xs text-muted sm:hidden">
-                      {ing.origin} · {ing.region}
-                    </p>
-                    <p className="mt-1 text-xs text-subtle">{ing.note}</p>
-                  </td>
-                  <td className="hidden px-4 py-4 text-muted sm:table-cell">
-                    <p>{ing.origin}</p>
-                    <p className="text-xs">{ing.region}</p>
-                  </td>
-                  <td className="px-4 py-4 font-medium tabular-nums">{ing.lot}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      ) : null}
+      {dish.image.kind === "generated" ? (
+        <p className="mt-6 text-sm text-subtle">
+          About the image: an AI-generated illustration of a typical {dish.name}, not a photo of our
+          food.{dish.image.note ? ` ${dish.image.note}` : ""}
+        </p>
+      ) : null}
+
+      <section aria-labelledby="more" className="mt-16">
+        <h2 id="more" className="font-display text-2xl font-semibold tracking-tight">
+          More from {cuisine.name}
+        </h2>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((d) => (
+            <DishCard key={d.id} dish={d} />
+          ))}
         </div>
       </section>
 
-      {related.length > 0 ? (
-        <section className="mt-16">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">More from {cuisine.name}</h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((d) => (
-              <DishCard key={d.id} dish={d} />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      {/* Phones: keep the next step in reach while reading the ingredients. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/95 px-4 pt-3 pb-safe backdrop-blur-md sm:hidden">
+        <AddButton dish={dish} size="lg" withPrice className="w-full" />
+      </div>
     </div>
   );
 }

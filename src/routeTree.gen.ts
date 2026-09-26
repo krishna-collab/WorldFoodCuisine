@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as IngredientsRouteImport } from './routes/ingredients'
 import { Route as KitchensRouteImport } from './routes/kitchens'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PartnersRouteImport } from './routes/partners'
@@ -27,6 +29,16 @@ const IndexRoute = IndexRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IngredientsRoute = IngredientsRouteImport.update({
+  id: '/ingredients',
+  path: '/ingredients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KitchensRoute = KitchensRouteImport.update({
@@ -68,6 +80,8 @@ const OrderIdRoute = OrderIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
+  '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
@@ -79,6 +93,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
+  '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
@@ -91,6 +107,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
+  '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
@@ -104,6 +122,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/checkout'
+    | '/delivery'
+    | '/ingredients'
     | '/kitchens'
     | '/menu'
     | '/partners'
@@ -115,6 +135,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/checkout'
+    | '/delivery'
+    | '/ingredients'
     | '/kitchens'
     | '/menu'
     | '/partners'
@@ -126,6 +148,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/checkout'
+    | '/delivery'
+    | '/ingredients'
     | '/kitchens'
     | '/menu'
     | '/partners'
@@ -138,6 +162,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckoutRoute: typeof CheckoutRoute
+  DeliveryRoute: typeof DeliveryRoute
+  IngredientsRoute: typeof IngredientsRoute
   KitchensRoute: typeof KitchensRoute
   MenuRoute: typeof MenuRouteWithChildren
   PartnersRoute: typeof PartnersRoute
@@ -160,6 +186,20 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ingredients': {
+      id: '/ingredients'
+      path: '/ingredients'
+      fullPath: '/ingredients'
+      preLoaderRoute: typeof IngredientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kitchens': {
@@ -227,6 +267,8 @@ const MenuRouteWithChildren = MenuRoute._addFileChildren(MenuRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRoute,
+  DeliveryRoute: DeliveryRoute,
+  IngredientsRoute: IngredientsRoute,
   KitchensRoute: KitchensRoute,
   MenuRoute: MenuRouteWithChildren,
   PartnersRoute: PartnersRoute,

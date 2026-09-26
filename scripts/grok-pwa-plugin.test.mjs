@@ -511,10 +511,22 @@ test("vite config keeps the nitro serverDir wiring", () => {
 test("nitro middleware and its bundled assets exist", () => {
   const middleware = readFileSync(join(TEMPLATE_ROOT, "server/middleware/grok-pwa.ts"), "utf8");
   assert.match(middleware, /install-page\.html\?raw/);
-  assert.match(middleware, /virtual:grok-og-identity/);
+  assert.match(middleware, /manifest\.webmanifest/);
   readFileSync(join(TEMPLATE_ROOT, "scripts/install-page.html"));
   readFileSync(join(TEMPLATE_ROOT, "public/__grok/icon-180.png"));
   readFileSync(join(TEMPLATE_ROOT, "public/__grok/install/styles.css"));
+});
+
+// WorldFoodCuisine sets its own per-page title, description and share tags.
+// Rewriting documents would replace them with one site-wide card and add a
+// third-party script to every page, so neither half may touch HTML documents.
+test("app documents are served without head rewriting", () => {
+  const middleware = readFileSync(join(TEMPLATE_ROOT, "server/middleware/grok-pwa.ts"), "utf8");
+  const plugin = readFileSync(join(TEMPLATE_ROOT, "scripts/grok-pwa-plugin.mjs"), "utf8");
+  for (const source of [middleware, plugin]) {
+    assert.doesNotMatch(source, /createHeadInjector|injectGrokPwaHead/);
+  }
+  assert.doesNotMatch(plugin, /transformIndexHtml/);
 });
 
 test("vite plugin bakes og identity as a virtual module", () => {

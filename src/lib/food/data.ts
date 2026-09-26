@@ -1,942 +1,8 @@
-import type { City, Cuisine, CuisineId, DietTag, Dish } from "./types";
+import { cuisines, regionLabels } from "./cuisines.ts";
+import { dishes } from "./dishes.ts";
+import type { Allergen, Collection, Course, Cuisine, CuisineId, DietTag, Dish } from "./types.ts";
 
-export const APP_NAME = "WorldFoodCuisine";
-
-export const cuisines: Cuisine[] = [
-  {
-    id: "india",
-    name: "India",
-    native: "भारत",
-    blurb: "Tandoor, tadka, and slow gravies from five regions.",
-    kitchenNote: "Spice lots land weekly from named co-ops in Rajasthan, Kerala, and Hyderabad.",
-    image: "/food/india.jpg",
-  },
-  {
-    id: "nepal",
-    name: "Nepal",
-    native: "नेपाल",
-    blurb: "Himalayan dumplings, Newari plates, and mountain broths.",
-    kitchenNote: "Timur pepper and gundruk fermented to our spec in Kathmandu Valley.",
-    image: "/food/nepal.jpg",
-  },
-  {
-    id: "thailand",
-    name: "Thailand",
-    native: "ประเทศไทย",
-    blurb: "Pound, wok, and coconut — street heat, kitchen precision.",
-    kitchenNote: "Makrut lime, galangal, and bird chili flown from Chanthaburi.",
-    image: "/food/thailand.jpg",
-  },
-  {
-    id: "mexico",
-    name: "Mexico",
-    native: "México",
-    blurb: "Nixtamal, fire, and moles built over days, not minutes.",
-    kitchenNote: "Heirloom maize milled in-house. Chilies from Oaxaca and Puebla.",
-    image: "/food/mexico.jpg",
-  },
-  {
-    id: "italy",
-    name: "Italy",
-    native: "Italia",
-    blurb: "Flour, fire, and time — five regions, no shortcuts.",
-    kitchenNote: "00 flour from Capitanata. Guanciale and pecorino from named producers.",
-    image: "/food/italy.jpg",
-  },
-];
-
-export const cities: City[] = [
-  { id: "sf", name: "San Francisco", state: "CA", hub: "SoMa Kitchen", eta: 22, kitchens: 2, partners: ["uber", "doordash", "grubhub"] },
-  { id: "sj", name: "San Jose", state: "CA", hub: "Diridon Kitchen", eta: 24, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "oak", name: "Oakland", state: "CA", hub: "Jack London Kitchen", eta: 26, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "la", name: "Los Angeles", state: "CA", hub: "Arts District Kitchen", eta: 28, kitchens: 2, partners: ["uber", "doordash", "grubhub"] },
-  { id: "sea", name: "Seattle", state: "WA", hub: "SODO Kitchen", eta: 25, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "aus", name: "Austin", state: "TX", hub: "East Austin Kitchen", eta: 27, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "nyc", name: "New York", state: "NY", hub: "Long Island City Kitchen", eta: 30, kitchens: 2, partners: ["uber", "doordash", "grubhub"] },
-  { id: "chi", name: "Chicago", state: "IL", hub: "Fulton Market Kitchen", eta: 28, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "bos", name: "Boston", state: "MA", hub: "Seaport Kitchen", eta: 29, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "den", name: "Denver", state: "CO", hub: "RiNo Kitchen", eta: 26, kitchens: 1, partners: ["doordash"] },
-  { id: "mia", name: "Miami", state: "FL", hub: "Wynwood Kitchen", eta: 31, kitchens: 1, partners: ["uber", "doordash"] },
-  { id: "atl", name: "Atlanta", state: "GA", hub: "Old Fourth Kitchen", eta: 28, kitchens: 1, partners: ["uber", "doordash"] },
-];
-
-const ing = (
-  name: string,
-  origin: string,
-  region: string,
-  lot: string,
-  note: string,
-) => ({ name, origin, region, lot, note });
-
-export const dishes: Dish[] = [
-  {
-    id: "butter-chicken",
-    cuisine: "india",
-    name: "Butter Chicken",
-    localName: "Murgh Makhani",
-    description: "Tandoor-charred chicken in a tomato-fenugreek gravy finished with Straus cream. The plate Bay Area orders twice a week.",
-    price: 1490,
-    spice: 1,
-    calories: 640,
-    prepMinutes: 18,
-    tags: ["chef-pick", "hub-lunch"],
-    image: "/food/butter-chicken.jpg",
-    featured: true,
-    ingredients: [
-      ing("Chicken thigh", "Mary's Free Range", "California", "CK-4412", "Air-chilled, never frozen."),
-      ing("Kashmiri chili", "Shopian Co-op", "Kashmir, India", "SP-019", "Color, not just heat."),
-      ing("Fenugreek leaves", "Nagaur growers", "Rajasthan, India", "SP-088", "Dried kasuri methi, lot-dated."),
-      ing("Cream", "Straus Family Creamery", "Petaluma, CA", "DY-203", "Organic, glass-line overflow."),
-    ],
-  },
-  {
-    id: "chicken-biryani",
-    cuisine: "india",
-    name: "Hyderabadi Biryani",
-    localName: "Dum Biryani",
-    description: "Saffron rice layered with spiced chicken, sealed and steamed. Caramelized onion, mint, and a side of cucumber raita.",
-    price: 1550,
-    spice: 2,
-    calories: 780,
-    prepMinutes: 22,
-    tags: ["spicy", "chef-pick"],
-    image: "/food/chicken-biryani.jpg",
-    featured: true,
-    ingredients: [
-      ing("Aged basmati", "Dehradun mill", "Uttarakhand, India", "RC-112", "Two-year aged grain."),
-      ing("Saffron", "Pampore growers", "Kashmir, India", "SP-001", "Hand-thread, not powder."),
-      ing("Chicken", "Mary's Free Range", "California", "CK-4418", "Bone-in for the dum."),
-    ],
-  },
-  {
-    id: "masala-dosa",
-    cuisine: "india",
-    name: "Masala Dosa",
-    localName: "ಮಸಾಲ ದೋಸೆ",
-    description: "Crisp fermented rice-lentil crepe, potato masala, coconut chutney, and sambar. South Indian breakfast, all day.",
-    price: 1290,
-    spice: 1,
-    calories: 520,
-    prepMinutes: 14,
-    tags: ["vegetarian", "vegan", "gluten-free", "hub-lunch"],
-    image: "/food/masala-dosa.jpg",
-    featured: true,
-    ingredients: [
-      ing("Rice & urad batter", "In-house ferment", "SoMa Kitchen", "BT-07", "30-hour ferment, never refrigerated batter."),
-      ing("Yukon potato", "Weiser Family Farms", "Tehachapi, CA", "VG-330", "Steamed, tempered with mustard seed."),
-      ing("Coconut", "Kerala mill", "Kerala, India", "SP-221", "Fresh-grated for chutney."),
-    ],
-  },
-  {
-    id: "palak-paneer",
-    cuisine: "india",
-    name: "Palak Paneer",
-    localName: "पालक पनीर",
-    description: "Blanched spinach, ginger, and house paneer. Clean, green, and built for weekday desks.",
-    price: 1350,
-    spice: 1,
-    calories: 490,
-    prepMinutes: 16,
-    tags: ["vegetarian", "gluten-free", "hub-lunch"],
-    image: "/food/palak-paneer.jpg",
-    ingredients: [
-      ing("Spinach", "Tierra Vegetables", "Sonoma, CA", "VG-118", "Same-morning harvest when in season."),
-      ing("Paneer", "In-house", "SoMa Kitchen", "DY-014", "Straus milk, pressed daily."),
-    ],
-  },
-  {
-    id: "tikka-masala",
-    cuisine: "india",
-    name: "Chicken Tikka Masala",
-    localName: "चिकन टिक्का मसाला",
-    description: "Yogurt-marinated tikka in a smoky tomato-onion masala. The diaspora classic, cooked like a curryhouse that cares.",
-    price: 1490,
-    spice: 2,
-    calories: 670,
-    prepMinutes: 18,
-    tags: ["spicy", "hub-lunch"],
-    image: "/food/tikka-masala.jpg",
-    ingredients: [
-      ing("Chicken tikka", "Mary's Free Range", "California", "CK-4420", "Overnight hung-curd marinade."),
-      ing("Tomatoes", "Capay Valley", "California", "VG-204", "Roasted down for the masala."),
-    ],
-  },
-  {
-    id: "tandoori-chicken",
-    cuisine: "india",
-    name: "Tandoori Chicken",
-    localName: "तंदूरी चिकन",
-    description: "Bone-in bird, 12-hour marinade, hard char. Lemon, onion, and mint chutney.",
-    price: 1590,
-    spice: 2,
-    calories: 540,
-    prepMinutes: 20,
-    tags: ["gluten-free", "spicy", "chef-pick"],
-    image: "/food/tandoori-chicken.jpg",
-    ingredients: [
-      ing("Chicken legs", "Mary's Free Range", "California", "CK-4431", "Skin-on, yogurt and chili."),
-      ing("Kashmiri chili", "Shopian Co-op", "Kashmir, India", "SP-019", "The red is the chili, not dye."),
-    ],
-  },
-  {
-    id: "dal-makhani",
-    cuisine: "india",
-    name: "Dal Makhani",
-    localName: "दाल मखनी",
-    description: "Black lentils and kidney beans, overnight fire, butter and cream. The vegetarian plate that eats like a main.",
-    price: 1190,
-    spice: 1,
-    calories: 510,
-    prepMinutes: 15,
-    tags: ["vegetarian", "gluten-free", "hub-lunch"],
-    image: "/food/dal-makhani.jpg",
-    ingredients: [
-      ing("Whole urad", "Punjab mill", "Punjab, India", "LG-044", "Soaked 8 hours."),
-      ing("Butter", "Straus Family Creamery", "Petaluma, CA", "DY-201", "Cultured, unsalted."),
-    ],
-  },
-  {
-    id: "rogan-josh",
-    cuisine: "india",
-    name: "Kashmiri Rogan Josh",
-    localName: "रोगन जोश",
-    description: "Lamb shoulder, Kashmiri chili, fennel, and ratan jot. Slow, red, and unapologetic.",
-    price: 1690,
-    spice: 2,
-    calories: 720,
-    prepMinutes: 22,
-    tags: ["gluten-free", "spicy"],
-    image: "/food/rogan-josh.jpg",
-    ingredients: [
-      ing("Lamb shoulder", "Superior Farms", "Dixon, CA", "MT-090", "Grass-fed, cut in-house."),
-      ing("Fennel & ginger", "Kashmir lot", "Kashmir, India", "SP-055", "Rogan josh masala, ground weekly."),
-    ],
-  },
-  {
-    id: "chole-bhature",
-    cuisine: "india",
-    name: "Chole Bhature",
-    localName: "छोले भटूरे",
-    description: "Spiced chickpeas and a puffed fermented bread. Punjabi street energy, packed for the desk.",
-    price: 1250,
-    spice: 2,
-    calories: 740,
-    prepMinutes: 16,
-    tags: ["vegetarian", "spicy", "hub-lunch"],
-    image: "/food/chole-bhature.jpg",
-    ingredients: [
-      ing("Chickpeas", "Rancho Gordo", "Napa, CA", "LG-012", "Heirloom, not canned."),
-      ing("Bhatura dough", "In-house", "SoMa Kitchen", "BR-03", "Yogurt ferment, fried to order."),
-    ],
-  },
-  {
-    id: "malai-kofta",
-    cuisine: "india",
-    name: "Malai Kofta",
-    localName: "मलाई कोफ्ता",
-    description: "Paneer-potato dumplings in a cashew-tomato gravy. Festival food, Tuesday price.",
-    price: 1390,
-    spice: 1,
-    calories: 610,
-    prepMinutes: 17,
-    tags: ["vegetarian"],
-    image: "/food/malai-kofta.jpg",
-    ingredients: [
-      ing("Paneer kofta", "In-house", "SoMa Kitchen", "DY-018", "Pressed paneer, potato, raisin."),
-      ing("Cashew", "Karnataka lot", "Karnataka, India", "NT-007", "Soaked and milled for the gravy."),
-    ],
-  },
-  {
-    id: "chicken-momo",
-    cuisine: "nepal",
-    name: "Chicken Momo",
-    localName: "चिकेन मोमो",
-    description: "Hand-pleated dumplings, sesame-tomato achar, and a clear ginger broth. Nepal's national order.",
-    price: 1290,
-    spice: 2,
-    calories: 480,
-    prepMinutes: 16,
-    tags: ["spicy", "chef-pick", "hub-lunch"],
-    image: "/food/chicken-momo.jpg",
-    featured: true,
-    ingredients: [
-      ing("Momo wrappers", "In-house", "SoMa Kitchen", "WR-11", "Rolled thin, pleated to 18 folds."),
-      ing("Chicken filling", "Mary's Free Range", "California", "CK-4450", "Ginger, turmeric, cilantro."),
-      ing("Timur pepper", "Palpa growers", "Nepal", "SP-300", "Sichuan's cousin, brighter."),
-    ],
-  },
-  {
-    id: "dal-bhat",
-    cuisine: "nepal",
-    name: "Dal Bhat Tarkari",
-    localName: "दाल भात तरकारी",
-    description: "The Nepali plate: lentil soup, rice, seasonal tarkari, pickle, and greens. Eat, refill, work.",
-    price: 1350,
-    spice: 1,
-    calories: 620,
-    prepMinutes: 18,
-    tags: ["vegetarian", "vegan", "gluten-free", "hub-lunch"],
-    image: "/food/dal-bhat.jpg",
-    ingredients: [
-      ing("Yellow lentils", "Nepal mill", "Terai, Nepal", "LG-090", "Tempered with ghee and cumin."),
-      ing("Seasonal tarkari", "Dirty Girl Produce", "Santa Cruz, CA", "VG-401", "Changes with the market."),
-    ],
-  },
-  {
-    id: "newari-bara",
-    cuisine: "nepal",
-    name: "Newari Bara",
-    localName: "बारा",
-    description: "Lentil pancakes from the Kathmandu Valley, egg optional, with smoky achar.",
-    price: 1190,
-    spice: 1,
-    calories: 430,
-    prepMinutes: 14,
-    tags: ["gluten-free", "hub-lunch"],
-    image: "/food/newari-bara.jpg",
-    ingredients: [
-      ing("Black lentil batter", "In-house soak", "SoMa Kitchen", "BT-22", "Ground after 6-hour soak."),
-      ing("Egg", "Vital Farms", "California", "EG-04", "Cracked onto the bara to order."),
-    ],
-  },
-  {
-    id: "thukpa",
-    cuisine: "nepal",
-    name: "Thukpa",
-    localName: "थुक्पा",
-    description: "Himalayan noodle soup — chicken, ginger, and Himalayan chili in a clear broth.",
-    price: 1250,
-    spice: 2,
-    calories: 510,
-    prepMinutes: 16,
-    tags: ["spicy", "hub-lunch"],
-    image: "/food/thukpa.jpg",
-    ingredients: [
-      ing("Hand-cut noodles", "In-house", "SoMa Kitchen", "ND-08", "Wheat dough, cut the morning of."),
-      ing("Broth", "Kitchen bones", "SoMa Kitchen", "BR-19", "12-hour chicken stock."),
-    ],
-  },
-  {
-    id: "sel-roti",
-    cuisine: "nepal",
-    name: "Sel Roti & Aloo Dum",
-    localName: "सेल रोटी",
-    description: "Ring-shaped rice bread with spiced potatoes. Festival food that travels well.",
-    price: 1090,
-    spice: 1,
-    calories: 560,
-    prepMinutes: 14,
-    tags: ["vegetarian", "gluten-free"],
-    image: "/food/sel-roti.jpg",
-    ingredients: [
-      ing("Rice batter", "In-house", "SoMa Kitchen", "BT-30", "Soaked rice, milk, cardamom."),
-      ing("Baby potato", "Weiser Family Farms", "Tehachapi, CA", "VG-331", "Aloo dum with timur."),
-    ],
-  },
-  {
-    id: "chatamari",
-    cuisine: "nepal",
-    name: "Chatamari",
-    localName: "चटामरी",
-    description: "Newari rice crepe with minced chicken, egg, and tomato. Sometimes called Nepali pizza — it isn't.",
-    price: 1150,
-    spice: 1,
-    calories: 470,
-    prepMinutes: 15,
-    tags: ["gluten-free", "hub-lunch"],
-    image: "/food/chatamari.jpg",
-    ingredients: [
-      ing("Rice crepe", "In-house", "SoMa Kitchen", "BT-31", "Ground rice, water, salt."),
-      ing("Minced chicken", "Mary's Free Range", "California", "CK-4455", "Ginger and chili."),
-    ],
-  },
-  {
-    id: "chicken-choila",
-    cuisine: "nepal",
-    name: "Chicken Choila",
-    localName: "चोइला",
-    description: "Smoke-charred chicken, mustard oil, timur, and ginger. Eaten warm or cold. Extremely moreish.",
-    price: 1450,
-    spice: 3,
-    calories: 430,
-    prepMinutes: 16,
-    tags: ["gluten-free", "spicy", "chef-pick"],
-    image: "/food/chicken-choila.jpg",
-    ingredients: [
-      ing("Charbroiled chicken", "Mary's Free Range", "California", "CK-4460", "Mustard oil finish."),
-      ing("Timur & fenugreek", "Palpa growers", "Nepal", "SP-301", "The Newari heat signature."),
-    ],
-  },
-  {
-    id: "yomari",
-    cuisine: "nepal",
-    name: "Yomari",
-    localName: "योमरी",
-    description: "Steamed rice dumplings filled with molasses and sesame. A Newari sweet with a pointed story.",
-    price: 990,
-    spice: 0,
-    calories: 380,
-    prepMinutes: 12,
-    tags: ["vegetarian", "vegan", "gluten-free"],
-    image: "/food/yomari.jpg",
-    ingredients: [
-      ing("Rice dough", "In-house", "SoMa Kitchen", "BT-40", "Newari rice flour."),
-      ing("Chaku molasses", "Bhaktapur lot", "Nepal", "SW-02", "Dark cane, sesame."),
-    ],
-  },
-  {
-    id: "aloo-tama",
-    cuisine: "nepal",
-    name: "Aloo Tama",
-    localName: "आलु तामा",
-    description: "Potato, bamboo shoot, and black-eyed peas in a sour-savory broth. The highland stew.",
-    price: 1290,
-    spice: 2,
-    calories: 440,
-    prepMinutes: 16,
-    tags: ["vegetarian", "vegan", "gluten-free", "spicy"],
-    image: "/food/aloo-tama.jpg",
-    ingredients: [
-      ing("Fermented bamboo", "Kathmandu Valley", "Nepal", "VG-880", "Tama, rinsed and simmered."),
-      ing("Black-eyed peas", "Rancho Gordo", "Napa, CA", "LG-020", "Soaked overnight."),
-    ],
-  },
-  {
-    id: "gundruk-dhido",
-    cuisine: "nepal",
-    name: "Gundruk & Dhido",
-    localName: "गुन्द्रुक ढिंडो",
-    description: "Fermented leafy broth with buckwheat dhido. Mountain food, plated for the city.",
-    price: 1390,
-    spice: 1,
-    calories: 490,
-    prepMinutes: 18,
-    tags: ["vegetarian", "vegan", "gluten-free"],
-    image: "/food/gundruk-dhido.jpg",
-    ingredients: [
-      ing("Gundruk", "Kathmandu ferment", "Nepal", "VG-890", "Mustard greens, sun-dried, fermented."),
-      ing("Buckwheat flour", "Bob's Red Mill lot", "Oregon", "GR-14", "Dhido stirred to order."),
-    ],
-  },
-  {
-    id: "pad-thai",
-    cuisine: "thailand",
-    name: "Pad Thai",
-    localName: "ผัดไทย",
-    description: "Tamarind, fish sauce, palm sugar — the tightrope. Shrimp, egg, tofu, crushed peanut, lime.",
-    price: 1390,
-    spice: 1,
-    calories: 680,
-    prepMinutes: 14,
-    tags: ["chef-pick", "hub-lunch"],
-    image: "/food/pad-thai.jpg",
-    featured: true,
-    ingredients: [
-      ing("Rice noodles", "Chanthaburi mill", "Thailand", "ND-40", "Soaked, never boiled first."),
-      ing("Tamarind", "Sukhothai lot", "Thailand", "SP-410", "Pulled, not concentrate."),
-      ing("Shrimp", "Wild gulf", "Texas", "SF-11", "16/20, peeled in kitchen."),
-    ],
-  },
-  {
-    id: "green-curry",
-    cuisine: "thailand",
-    name: "Green Curry",
-    localName: "แกงเขียวหวาน",
-    description: "House green paste, coconut, Thai eggplant, basil. Chicken or tofu. Heat that blooms, then settles.",
-    price: 1450,
-    spice: 2,
-    calories: 590,
-    prepMinutes: 16,
-    tags: ["gluten-free", "spicy", "hub-lunch"],
-    image: "/food/green-curry.jpg",
-    ingredients: [
-      ing("Green curry paste", "In-house pound", "SoMa Kitchen", "PS-01", "Bird chili, makrut, galangal."),
-      ing("Coconut milk", "Chumphon mill", "Thailand", "DY-80", "First press, canned the week of."),
-    ],
-  },
-  {
-    id: "tom-yum",
-    cuisine: "thailand",
-    name: "Tom Yum Goong",
-    localName: "ต้มยำกุ้ง",
-    description: "Lemongrass, galangal, lime leaf, shrimp. Hot-sour, clear, and loud in the best way.",
-    price: 1290,
-    spice: 3,
-    calories: 320,
-    prepMinutes: 14,
-    tags: ["gluten-free", "spicy", "chef-pick"],
-    image: "/food/tom-yum.jpg",
-    ingredients: [
-      ing("Shrimp", "Wild gulf", "Texas", "SF-12", "Heads on for the stock."),
-      ing("Makrut lime leaf", "Chanthaburi", "Thailand", "HB-09", "Torn, not sliced to dust."),
-    ],
-  },
-  {
-    id: "pad-kra-pao",
-    cuisine: "thailand",
-    name: "Pad Kra Pao",
-    localName: "กะเพรา",
-    description: "Holy basil, bird chili, minced chicken, fried egg. Thailand's office lunch — now yours.",
-    price: 1350,
-    spice: 3,
-    calories: 640,
-    prepMinutes: 12,
-    tags: ["spicy", "hub-lunch", "chef-pick"],
-    image: "/food/pad-kra-pao.jpg",
-    ingredients: [
-      ing("Holy basil", "Our hydro rack", "SoMa Kitchen", "HB-01", "Grown in-kitchen, picked at ticket."),
-      ing("Bird chili", "Chanthaburi", "Thailand", "SP-430", "We do not hold back."),
-    ],
-  },
-  {
-    id: "massaman",
-    cuisine: "thailand",
-    name: "Massaman Curry",
-    localName: "แกงมัสมั่น",
-    description: "Muslim-Thai curry: beef, potato, peanut, cinnamon, coconut. A long simmer.",
-    price: 1550,
-    spice: 1,
-    calories: 710,
-    prepMinutes: 20,
-    tags: ["gluten-free"],
-    image: "/food/massaman.jpg",
-    ingredients: [
-      ing("Beef chuck", "Five Dot Ranch", "Marshall, CA", "MT-22", "Braise-cut, 3 hours."),
-      ing("Massaman paste", "In-house", "SoMa Kitchen", "PS-08", "Cardamom, cinnamon, dried chili."),
-    ],
-  },
-  {
-    id: "som-tam",
-    cuisine: "thailand",
-    name: "Som Tam",
-    localName: "ส้มตำ",
-    description: "Green papaya, long bean, tomato, peanut, dried shrimp. Pounded to order.",
-    price: 1190,
-    spice: 3,
-    calories: 280,
-    prepMinutes: 10,
-    tags: ["gluten-free", "spicy"],
-    image: "/food/som-tam.jpg",
-    ingredients: [
-      ing("Green papaya", "Hawaii lot", "Hawaii", "VG-510", "Julienned at the mortar."),
-      ing("Palm sugar", "Phetchabun", "Thailand", "SP-450", "Warms the chili and lime."),
-    ],
-  },
-  {
-    id: "mango-sticky-rice",
-    cuisine: "thailand",
-    name: "Mango Sticky Rice",
-    localName: "ข้าวเหนียวมะม่วง",
-    description: "Seasonal mango, coconut-soaked sticky rice, salt flake. When mango is off, we 86 it.",
-    price: 890,
-    spice: 0,
-    calories: 420,
-    prepMinutes: 8,
-    tags: ["vegetarian", "vegan", "gluten-free"],
-    image: "/food/mango-sticky-rice.jpg",
-    ingredients: [
-      ing("Sticky rice", "Isan mill", "Thailand", "RC-80", "Soaked overnight, steamed."),
-      ing("Ataulfo mango", "Mexico / CA", "Seasonal", "VG-600", "Only when ripe. Period."),
-    ],
-  },
-  {
-    id: "khao-pad",
-    cuisine: "thailand",
-    name: "Khao Pad",
-    localName: "ข้าวผัด",
-    description: "Thai fried rice with crab, egg, cucumber, lime. The control plate — and still the one people reorder.",
-    price: 1250,
-    spice: 1,
-    calories: 610,
-    prepMinutes: 12,
-    tags: ["hub-lunch"],
-    image: "/food/khao-pad.jpg",
-    ingredients: [
-      ing("Day-old jasmine", "In-house steam", "SoMa Kitchen", "RC-90", "Cooled overnight."),
-      ing("Crab", "Pacific catch", "California", "SF-40", "Picked meat, folded at the wok."),
-    ],
-  },
-  {
-    id: "panang-curry",
-    cuisine: "thailand",
-    name: "Panang Curry",
-    localName: "พะแนง",
-    description: "Thicker than green, peanut-round, makrut-scented. Chicken, leaf chiffonade.",
-    price: 1490,
-    spice: 2,
-    calories: 630,
-    prepMinutes: 16,
-    tags: ["gluten-free", "spicy"],
-    image: "/food/panang-curry.jpg",
-    ingredients: [
-      ing("Panang paste", "In-house", "SoMa Kitchen", "PS-04", "Dried chili, peanut, cumin."),
-      ing("Chicken thigh", "Mary's Free Range", "California", "CK-4470", "Sliced against the grain."),
-    ],
-  },
-  {
-    id: "khao-soi",
-    cuisine: "thailand",
-    name: "Khao Soi",
-    localName: "ข้าวซอย",
-    description: "Chiang Mai curry noodles: coconut broth, egg noodle, pickled mustard, fried noodle crown.",
-    price: 1450,
-    spice: 2,
-    calories: 720,
-    prepMinutes: 16,
-    tags: ["spicy", "chef-pick"],
-    image: "/food/khao-soi.jpg",
-    ingredients: [
-      ing("Egg noodles", "In-house", "SoMa Kitchen", "ND-50", "Boiled and fried from the same dough."),
-      ing("Khao soi paste", "In-house", "SoMa Kitchen", "PS-12", "Black cardamom, turmeric, chili."),
-    ],
-  },
-  {
-    id: "tacos-al-pastor",
-    cuisine: "mexico",
-    name: "Tacos al Pastor",
-    localName: "Tacos al pastor",
-    description: "Achiote pork, pineapple, onion, cilantro. Three tortillas. The trompo runs all service.",
-    price: 1390,
-    spice: 2,
-    calories: 580,
-    prepMinutes: 12,
-    tags: ["spicy", "chef-pick", "hub-lunch"],
-    image: "/food/tacos-al-pastor.jpg",
-    featured: true,
-    ingredients: [
-      ing("Pork shoulder", "Heritage lot", "Iowa / CA", "MT-40", "Achiote-achiote, stacked on the spit."),
-      ing("Nixtamal tortillas", "In-house mill", "SoMa Kitchen", "TZ-01", "Heirloom maize, pressed to order."),
-      ing("Pineapple", "Hawaii lot", "Hawaii", "VG-710", "Roasted on the same trompo."),
-    ],
-  },
-  {
-    id: "mole-poblano",
-    cuisine: "mexico",
-    name: "Mole Poblano",
-    localName: "Mole poblano",
-    description: "Twenty-plus ingredients, three days. Turkey, sesame, and a sauce that tastes like a city.",
-    price: 1650,
-    spice: 1,
-    calories: 690,
-    prepMinutes: 20,
-    tags: ["gluten-free", "chef-pick"],
-    image: "/food/mole-poblano.jpg",
-    ingredients: [
-      ing("Mulato & ancho", "Puebla growers", "Puebla, Mexico", "CH-10", "Toasted, seeded, soaked."),
-      ing("Turkey thigh", "Diestel", "Sonora, CA", "MT-70", "The Puebla bird."),
-    ],
-  },
-  {
-    id: "carne-asada",
-    cuisine: "mexico",
-    name: "Carne Asada Plate",
-    localName: "Carne asada",
-    description: "Skirt steak, mesquite, salsa roja, beans, rice, tortillas. Straightforward and serious.",
-    price: 1590,
-    spice: 1,
-    calories: 760,
-    prepMinutes: 16,
-    tags: ["gluten-free", "hub-lunch"],
-    image: "/food/carne-asada.jpg",
-    ingredients: [
-      ing("Skirt steak", "Five Dot Ranch", "Marshall, CA", "MT-24", "Citrus-garlic marinade, 6 hours."),
-      ing("Mesquite", "Texas lot", "Texas", "WD-02", "The only smoke we use for this plate."),
-    ],
-  },
-  {
-    id: "enchiladas-verdes",
-    cuisine: "mexico",
-    name: "Enchiladas Verdes",
-    localName: "Enchiladas verdes",
-    description: "Tomatillo salsa, shredded chicken, crema, onion. Baked to the edge of blister.",
-    price: 1350,
-    spice: 1,
-    calories: 610,
-    prepMinutes: 16,
-    tags: ["hub-lunch"],
-    image: "/food/enchiladas-verdes.jpg",
-    ingredients: [
-      ing("Tomatillo", "Capay Valley", "California", "VG-220", "Roasted with serrano."),
-      ing("Crema", "Straus", "Petaluma, CA", "DY-210", "Cultured, loose."),
-    ],
-  },
-  {
-    id: "chiles-rellenos",
-    cuisine: "mexico",
-    name: "Chiles Rellenos",
-    localName: "Chiles rellenos",
-    description: "Roasted poblano, melted cheese, tomato caldillo, egg batter. A plate that refuses to be rushed.",
-    price: 1450,
-    spice: 1,
-    calories: 580,
-    prepMinutes: 18,
-    tags: ["vegetarian"],
-    image: "/food/chiles-rellenos.jpg",
-    ingredients: [
-      ing("Poblano", "Family farm lot", "Oxnard, CA", "VG-240", "Blistered, peeled."),
-      ing("Oaxaca cheese", "California creamery", "California", "DY-300", "Pulled, not pre-shredded."),
-    ],
-  },
-  {
-    id: "pozole-rojo",
-    cuisine: "mexico",
-    name: "Pozole Rojo",
-    localName: "Pozole rojo",
-    description: "Nixtamal hominy, pork, guajillo. Cabbage, radish, oregano, lime on the side.",
-    price: 1390,
-    spice: 2,
-    calories: 540,
-    prepMinutes: 16,
-    tags: ["gluten-free", "spicy"],
-    image: "/food/pozole-rojo.jpg",
-    ingredients: [
-      ing("Heirloom hominy", "In-house nixtamal", "SoMa Kitchen", "MZ-04", "Same maize as the tortillas."),
-      ing("Guajillo", "Zacatecas", "Mexico", "CH-22", "The red of the broth."),
-    ],
-  },
-  {
-    id: "tamales",
-    cuisine: "mexico",
-    name: "Tamales Oaxaqueños",
-    localName: "Tamales oaxaqueños",
-    description: "Banana-leaf tamales, mole negro, chicken. Two to a box. Unwrap and steam still lives in there.",
-    price: 1290,
-    spice: 1,
-    calories: 520,
-    prepMinutes: 14,
-    tags: ["gluten-free", "hub-lunch"],
-    image: "/food/tamales.jpg",
-    ingredients: [
-      ing("Masa", "In-house mill", "SoMa Kitchen", "MZ-05", "Heirloom, lard from the same pork."),
-      ing("Mole negro", "Kitchen three-day", "SoMa Kitchen", "ML-01", "Chilhuacle, chocolate, smoke."),
-    ],
-  },
-  {
-    id: "huitlacoche-quesadilla",
-    cuisine: "mexico",
-    name: "Huitlacoche Quesadilla",
-    localName: "Quesadilla de huitlacoche",
-    description: "Corn mushroom, epazote, Oaxaca cheese, blue-maize tortilla. The deep-cut order.",
-    price: 1350,
-    spice: 0,
-    calories: 490,
-    prepMinutes: 12,
-    tags: ["vegetarian", "chef-pick"],
-    image: "/food/huitlacoche-quesadilla.jpg",
-    ingredients: [
-      ing("Huitlacoche", "Seasonal Midwest / MX", "Seasonal", "VG-900", "When we have it, we say so."),
-      ing("Blue maize", "In-house mill", "SoMa Kitchen", "MZ-09", "Pressed at the station."),
-    ],
-  },
-  {
-    id: "chilaquiles",
-    cuisine: "mexico",
-    name: "Chilaquiles",
-    localName: "Chilaquiles",
-    description: "Yesterday's tortillas, salsa verde, crema, egg. Breakfast energy at lunch o'clock.",
-    price: 1250,
-    spice: 2,
-    calories: 560,
-    prepMinutes: 12,
-    tags: ["vegetarian", "spicy", "hub-lunch"],
-    image: "/food/chilaquiles.jpg",
-    ingredients: [
-      ing("Tortilla chips", "In-house fry", "SoMa Kitchen", "TZ-10", "Day-old nixtamal, never bagged."),
-      ing("Salsa verde", "Capay tomatillo", "California", "VG-221", "Blended with serrano."),
-    ],
-  },
-  {
-    id: "elote-guacamole",
-    cuisine: "mexico",
-    name: "Elote & Guacamole",
-    localName: "Elote y guacamole",
-    description: "Charred corn, cotija, chili; and a proper guacamole with still-chunky avocado. Share it or don't.",
-    price: 990,
-    spice: 1,
-    calories: 410,
-    prepMinutes: 10,
-    tags: ["vegetarian", "gluten-free"],
-    image: "/food/elote-guacamole.jpg",
-    ingredients: [
-      ing("Hass avocado", "Index Fresh", "Ventura, CA", "VG-010", "Ripe today, not tomorrow."),
-      ing("Sweet corn", "Riverdog Farm", "Guinda, CA", "VG-050", "Charred on the plancha."),
-    ],
-  },
-  {
-    id: "margherita",
-    cuisine: "italy",
-    name: "Margherita",
-    localName: "Pizza Margherita",
-    description: "San Marzano, Fior di Latte, basil, 900°F. The control pizza. We rest the dough 48 hours.",
-    price: 1490,
-    spice: 0,
-    calories: 720,
-    prepMinutes: 12,
-    tags: ["vegetarian", "chef-pick"],
-    image: "/food/margherita.jpg",
-    featured: true,
-    ingredients: [
-      ing("00 flour", "Capitanata mill", "Puglia, Italy", "FL-01", "Dough fermented 48 hours."),
-      ing("San Marzano tomatoes", "Agro Nocerino", "Campania, Italy", "VG-800", "DOP, crushed by hand."),
-      ing("Fior di latte", "Gioia", "California", "DY-400", "Made that morning."),
-    ],
-  },
-  {
-    id: "carbonara",
-    cuisine: "italy",
-    name: "Carbonara",
-    localName: "Spaghetti alla carbonara",
-    description: "Guanciale, pecorino, egg yolk, pepper. No cream. The Roman argument, settled.",
-    price: 1550,
-    spice: 0,
-    calories: 780,
-    prepMinutes: 14,
-    tags: ["chef-pick", "hub-lunch"],
-    image: "/food/carbonara.jpg",
-    featured: true,
-    ingredients: [
-      ing("Guanciale", "La Quercia", "Iowa", "MT-80", "Jowl, not bacon."),
-      ing("Pecorino Romano", "Lazio lot", "Lazio, Italy", "CH-01", "Grated to order."),
-      ing("Bronze pasta", "In-house extrude", "SoMa Kitchen", "PS-90", "Semolina, 24-hour dry."),
-    ],
-  },
-  {
-    id: "lasagna",
-    cuisine: "italy",
-    name: "Lasagna Bolognese",
-    localName: "Lasagne alla bolognese",
-    description: "Ragù that simmered since dawn, béchamel, pasta sheets. Sliced like architecture.",
-    price: 1650,
-    spice: 0,
-    calories: 840,
-    prepMinutes: 18,
-    tags: ["hub-lunch"],
-    image: "/food/lasagna.jpg",
-    ingredients: [
-      ing("Beef & pork ragù", "Five Dot + heritage", "California", "MT-28", "Milk, soffritto, six hours."),
-      ing("Béchamel", "Straus milk", "Petaluma, CA", "DY-205", "Nutmeg, not glue."),
-    ],
-  },
-  {
-    id: "cacio-e-pepe",
-    cuisine: "italy",
-    name: "Cacio e Pepe",
-    localName: "Cacio e pepe",
-    description: "Pecorino, pepper, pasta water. Three ingredients and nowhere to hide.",
-    price: 1450,
-    spice: 1,
-    calories: 690,
-    prepMinutes: 12,
-    tags: ["vegetarian", "hub-lunch"],
-    image: "/food/cacio-e-pepe.jpg",
-    ingredients: [
-      ing("Tonnarelli", "In-house", "SoMa Kitchen", "PS-91", "Square, bronze-cut."),
-      ing("Pecorino Romano", "Lazio lot", "Lazio, Italy", "CH-01", "The sauce is the cheese."),
-    ],
-  },
-  {
-    id: "osso-buco",
-    cuisine: "italy",
-    name: "Osso Buco",
-    localName: "Ossobuco alla milanese",
-    description: "Veal shank, gremolata, saffron risotto. A Sunday plate, Tuesday delivery.",
-    price: 1890,
-    spice: 0,
-    calories: 820,
-    prepMinutes: 22,
-    tags: ["gluten-free", "chef-pick"],
-    image: "/food/osso-buco.jpg",
-    ingredients: [
-      ing("Veal shank", "Marcho Farms", "Pennsylvania", "MT-95", "Center-cut, marrow intact."),
-      ing("Saffron", "San Gavino", "Sardinia, Italy", "SP-700", "Risotto stained properly."),
-    ],
-  },
-  {
-    id: "risotto-milanese",
-    cuisine: "italy",
-    name: "Risotto alla Milanese",
-    localName: "Risotto alla milanese",
-    description: "Carnaroli, bone marrow, saffron. Stirred to the wave.",
-    price: 1690,
-    spice: 0,
-    calories: 640,
-    prepMinutes: 20,
-    tags: ["gluten-free"],
-    image: "/food/risotto-milanese.jpg",
-    ingredients: [
-      ing("Carnaroli", "Pavia mill", "Lombardy, Italy", "RC-50", "The risotto rice."),
-      ing("Saffron", "San Gavino", "Sardinia, Italy", "SP-700", "Threads, steeped in stock."),
-    ],
-  },
-  {
-    id: "gnocchi-pesto",
-    cuisine: "italy",
-    name: "Gnocchi al Pesto",
-    localName: "Gnocchi al pesto",
-    description: "Potato gnocchi, Genovese pesto, green beans, potato. Liguria in a box.",
-    price: 1490,
-    spice: 0,
-    calories: 670,
-    prepMinutes: 14,
-    tags: ["vegetarian"],
-    image: "/food/gnocchi-pesto.jpg",
-    ingredients: [
-      ing("Gnocchi", "In-house", "SoMa Kitchen", "PS-70", "Yukon, ricotta, light hand."),
-      ing("Basil pesto", "Our hydro basil", "SoMa Kitchen", "HB-20", "Pine nut, garlic, pecorino, oil."),
-    ],
-  },
-  {
-    id: "eggplant-parmigiana",
-    cuisine: "italy",
-    name: "Eggplant Parmigiana",
-    localName: "Parmigiana di melanzane",
-    description: "Fried eggplant, tomato, mozzarella, basil. Southern, layered, better the next hour.",
-    price: 1390,
-    spice: 0,
-    calories: 590,
-    prepMinutes: 16,
-    tags: ["vegetarian"],
-    image: "/food/eggplant-parmigiana.jpg",
-    ingredients: [
-      ing("Globe eggplant", "Weiser Family Farms", "Tehachapi, CA", "VG-340", "Salted, fried, stacked."),
-      ing("Tomato", "Capay Valley", "California", "VG-205", "Cooked down with basil."),
-    ],
-  },
-  {
-    id: "tiramisu",
-    cuisine: "italy",
-    name: "Tiramisu",
-    localName: "Tiramisù",
-    description: "Espresso, mascarpone, cocoa, savoiardi. Set, not soupy.",
-    price: 890,
-    spice: 0,
-    calories: 420,
-    prepMinutes: 8,
-    tags: ["vegetarian"],
-    image: "/food/tiramisu.jpg",
-    ingredients: [
-      ing("Mascarpone", "Bellwether Farms", "Sonoma, CA", "DY-500", "The structure."),
-      ing("Espresso", "Equator", "San Rafael, CA", "CF-01", "Pulled for the soak, not leftover."),
-    ],
-  },
-  {
-    id: "burrata-caprese",
-    cuisine: "italy",
-    name: "Burrata Caprese",
-    localName: "Caprese con burrata",
-    description: "Burrata, peak tomato, basil, oil. We 86 this if the tomatoes are boring.",
-    price: 1250,
-    spice: 0,
-    calories: 390,
-    prepMinutes: 8,
-    tags: ["vegetarian", "gluten-free"],
-    image: "/food/burrata-caprese.jpg",
-    ingredients: [
-      ing("Burrata", "Gioia", "California", "DY-410", "Cut at the table — here, in the box."),
-      ing("Tomatoes", "Dirty Girl Produce", "Santa Cruz, CA", "VG-402", "Only in season. Honest."),
-    ],
-  },
-];
+export { cuisines, dishes, regionLabels };
 
 export const cuisineById = Object.fromEntries(cuisines.map((c) => [c.id, c])) as Record<
   CuisineId,
@@ -944,6 +10,10 @@ export const cuisineById = Object.fromEntries(cuisines.map((c) => [c.id, c])) as
 >;
 
 export const dishById = Object.fromEntries(dishes.map((d) => [d.id, d])) as Record<string, Dish>;
+
+export function isCuisineId(value: string): value is CuisineId {
+  return value in cuisineById;
+}
 
 export function dishesByCuisine(id: CuisineId) {
   return dishes.filter((d) => d.cuisine === id);
@@ -953,20 +23,164 @@ export function featuredDishes() {
   return dishes.filter((d) => d.featured);
 }
 
+/** Dishes with an image (photo or labeled AI image), for places where imagery leads. */
+export function photographedDishes() {
+  return dishes.filter((d) => d.image.kind !== "placeholder");
+}
+
+/** BCP 47 language of each cuisine's native name. */
+export const cuisineLang: Record<CuisineId, string> = {
+  india: "hi",
+  nepal: "ne",
+  thailand: "th",
+  mexico: "es",
+  italy: "it",
+};
+
+/** BCP 47 language of a dish's local name (Hyderabadi biryani is written in Urdu). */
+export function localNameLang(dish: Dish): string {
+  if (/[؀-ۿ]/.test(dish.localName)) return "ur";
+  return cuisineLang[dish.cuisine];
+}
+
 export const dietLabels: Record<DietTag, string> = {
   vegetarian: "Vegetarian",
   vegan: "Vegan",
   "gluten-free": "Gluten-free",
-  spicy: "Spicy",
-  "chef-pick": "Kitchen pick",
-  "hub-lunch": "Hub lunch",
 };
 
-export const spiceLabel = ["No heat", "Warm", "Hot", "Bird chili"] as const;
+export const allergenLabels: Record<Allergen, string> = {
+  milk: "Milk",
+  egg: "Egg",
+  wheat: "Wheat",
+  soy: "Soy",
+  peanuts: "Peanuts",
+  "tree-nuts": "Tree nuts",
+  sesame: "Sesame",
+  fish: "Fish",
+  shellfish: "Shellfish",
+};
 
-export function cityById(id: string) {
-  return cities.find((c) => c.id === id) ?? cities[0];
+export const courseLabels: Record<Course, string> = {
+  main: "Main",
+  rice: "Rice",
+  noodles: "Noodles",
+  bread: "Bread",
+  "small-plate": "Small plate",
+  soup: "Soup",
+  dessert: "Dessert",
+};
+
+export const spiceLabel = ["Not spicy", "Mild", "Medium", "Hot"] as const;
+
+/** Editorial collections. Curated by hand; they say nothing about availability. */
+export const collections: Collection[] = [
+  {
+    id: "filled-and-wrapped",
+    title: "Filled and wrapped",
+    blurb: "Dumplings, crepes and parcels: momo, yomari, tamales and more.",
+    dishIds: [
+      "chicken-momo",
+      "yomari",
+      "tamales",
+      "masala-dosa",
+      "chiles-rellenos",
+      "huitlacoche-quesadilla",
+      "enchiladas-verdes",
+    ],
+  },
+  {
+    id: "plant-based",
+    title: "Plant-based",
+    blurb: "Every vegan dish on the menu, cooked in olive oil.",
+    dishIds: dishes.filter((d) => d.diet.includes("vegan")).map((d) => d.id),
+  },
+  {
+    id: "noodles-and-soups",
+    title: "Noodles and soups",
+    blurb: "Bowls from the Himalaya to Jalisco.",
+    dishIds: ["thukpa", "khao-soi", "tom-yum", "pozole-rojo", "pad-thai"],
+  },
+  {
+    id: "slow-cooked",
+    title: "Slow-cooked",
+    blurb: "Dishes that take hours: dal makhani, mole, osso buco.",
+    dishIds: ["dal-makhani", "rogan-josh", "mole-poblano", "osso-buco", "massaman", "lasagna"],
+  },
+];
+
+export const collectionById = Object.fromEntries(collections.map((c) => [c.id, c])) as Record<
+  string,
+  Collection
+>;
+
+/** Lowercase and strip diacritics so "oaxaquenos" finds "Oaxaqueños". */
+export function normalize(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
 }
 
-export const DELIVERY_FEE = 299;
-export const FREE_DELIVERY_AT = 3500;
+type SearchEntry = { dish: Dish; text: string; ingredients: string[] };
+
+const searchIndex: SearchEntry[] = dishes.map((dish) => {
+  const cuisine = cuisineById[dish.cuisine];
+  const ingredients = dish.parts.flatMap((p) => p.items);
+  const text = normalize(
+    [
+      dish.name,
+      dish.localName,
+      dish.tradition ?? "",
+      cuisine.name,
+      cuisine.native,
+      regionLabels[cuisine.region],
+      courseLabels[dish.course],
+      ...dish.diet.map((d) => dietLabels[d]),
+      ...dish.parts.map((p) => p.label),
+      ...ingredients,
+    ].join(" "),
+  );
+  return { dish, text, ingredients };
+});
+
+export type SearchResult = { dish: Dish; ingredientMatch?: string };
+
+/**
+ * Every word in the query must appear somewhere in the dish: its names, cuisine,
+ * region, tradition, course, diet or ingredients. Reports the first matching
+ * ingredient so results can say why they matched.
+ */
+export function searchDishes(query: string, pool: Dish[] = dishes): SearchResult[] {
+  const words = normalize(query).split(/\s+/).filter(Boolean);
+  const allowed = new Set(pool.map((d) => d.id));
+  if (words.length === 0) return pool.map((dish) => ({ dish }));
+  const results: SearchResult[] = [];
+  for (const entry of searchIndex) {
+    if (!allowed.has(entry.dish.id)) continue;
+    if (!words.every((w) => entry.text.includes(w))) continue;
+    const nameText = normalize(`${entry.dish.name} ${entry.dish.localName}`);
+    const ingredientMatch = words.every((w) => nameText.includes(w))
+      ? undefined
+      : entry.ingredients.find((i) => words.some((w) => normalize(i).includes(w)));
+    results.push({ dish: entry.dish, ingredientMatch });
+  }
+  return results;
+}
+
+/** Every ingredient on the menu, with the dishes that use it. */
+export function ingredientIndex(): { name: string; dishIds: string[] }[] {
+  const byKey = new Map<string, { name: string; dishIds: Set<string> }>();
+  for (const dish of dishes) {
+    for (const item of dish.parts.flatMap((p) => p.items)) {
+      const base = item.replace(/\s*\(.*\)\s*$/, "").trim();
+      const key = normalize(base);
+      const entry = byKey.get(key) ?? { name: base, dishIds: new Set<string>() };
+      entry.dishIds.add(dish.id);
+      byKey.set(key, entry);
+    }
+  }
+  return [...byKey.values()]
+    .map((e) => ({ name: e.name, dishIds: [...e.dishIds] }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
