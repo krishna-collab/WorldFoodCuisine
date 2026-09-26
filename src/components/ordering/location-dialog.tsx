@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { MapPin, X } from "lucide-react";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,8 @@ export function LocationDialog() {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [checked, setChecked] = useState<string | null>(null);
+  // Opened from a dish page: after the check, go back to ordering that dish.
+  const onDish = useRouterState({ select: (s) => s.location.pathname.startsWith("/dish/") });
 
   useEffect(() => {
     const dialog = ref.current;
@@ -62,17 +64,17 @@ export function LocationDialog() {
       ref={ref}
       onClose={closeDialog}
       aria-labelledby={`${inputId}-title`}
-      className="m-auto w-[min(100%-2rem,28rem)] rounded-2xl bg-surface p-0 text-fg shadow-[var(--shadow-border)] backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(100%-2rem,28rem)] rounded-2xl bg-surface p-0 text-fg shadow-[var(--shadow-raised)] backdrop:backdrop-blur-sm"
     >
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
-          <h2 id={`${inputId}-title`} className="font-display text-xl font-semibold tracking-tight">
-            Order near me
+          <h2 id={`${inputId}-title`} className="text-display-s">
+            Get it cooked near you
           </h2>
           <button
             type="button"
             onClick={closeDialog}
-            className="-m-2 flex size-11 items-center justify-center rounded-md text-muted hover:text-fg"
+            className="-m-2 flex size-11 items-center justify-center rounded-full text-muted hover:bg-sunken hover:text-fg"
             aria-label="Close"
           >
             <X className="size-5" aria-hidden="true" />
@@ -100,18 +102,18 @@ export function LocationDialog() {
               aria-describedby={error ? errorId : undefined}
               autoFocus
             />
-            <Button type="submit" size="lg" className="shrink-0">
+            <Button type="submit" size="lg" variant="clay" className="shrink-0">
               Check
             </Button>
           </div>
-          <p id={errorId} role="alert" className="mt-2 min-h-5 text-sm text-warn-fg">
+          <p id={errorId} role="alert" className="mt-2 min-h-5 text-sm font-medium text-danger">
             {error}
           </p>
         </form>
 
         <div aria-live="polite">
           {result?.kind === "served" ? (
-            <div className="mt-2 rounded-xl bg-elevated p-4 text-sm leading-relaxed">
+            <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="flex items-center gap-2 font-medium text-fg">
                 <MapPin className="size-4 text-accent" aria-hidden="true" />
                 {result.zone.demo ? "Demo delivery to " : "We deliver to "}
@@ -134,20 +136,26 @@ export function LocationDialog() {
                 </li>
               </ul>
               {result.zone.demo ? (
-                <p className="mt-2 text-warn-fg">
+                <p className="mt-2 font-medium text-warn-fg">
                   Demo mode: these are example numbers. Nothing is sent or charged.
                 </p>
               ) : null}
-              <Button asChild className="mt-4 w-full">
-                <Link to="/menu" onClick={closeDialog}>
-                  Browse the menu
-                </Link>
-              </Button>
+              {onDish ? (
+                <Button className="mt-4 w-full" onClick={closeDialog}>
+                  Continue
+                </Button>
+              ) : (
+                <Button asChild className="mt-4 w-full">
+                  <Link to="/menu" onClick={closeDialog}>
+                    Browse dishes
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : null}
 
           {result?.kind === "unserved" ? (
-            <div className="mt-2 rounded-xl bg-elevated p-4 text-sm leading-relaxed">
+            <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="font-medium text-fg">
                 We’re not delivering to {result.postalCode} yet.
               </p>
@@ -159,7 +167,7 @@ export function LocationDialog() {
               </p>
               <Button asChild variant="secondary" className="mt-4 w-full">
                 <Link to="/menu" onClick={closeDialog}>
-                  Browse the menu
+                  Browse dishes
                 </Link>
               </Button>
             </div>

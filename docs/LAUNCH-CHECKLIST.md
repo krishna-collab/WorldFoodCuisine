@@ -24,8 +24,15 @@ time zone and tax rate. Once a zone exists:
 
 - those ZIP codes see real prices, fees, tax and delivery times;
 - every other ZIP still gets "not delivering here yet";
-- the Order near me page lists the areas;
-- the "Preview: we're not delivering yet" banner disappears.
+- the Get it cooked page lists the areas;
+- the "Not delivering yet" status line disappears.
+
+Also per kitchen, for the dish page and checkout:
+
+- [ ] Which dishes it makes each day, and how it will tell the site when one
+      sells out (today that's `unavailable` on the zone, edited by hand)
+- [ ] Options it really offers (the demo offers "milder" for spicy dishes)
+- [ ] Tip choices, and whether tips go to couriers in full
 
 ## 2. Prices (Blocks ordering)
 
@@ -63,6 +70,18 @@ confirm all of it against the real recipes. Points to check first:
 - [ ] Check local rules for allergen and ingredient disclosure on online menus.
 - [ ] **Native names:** have a native speaker check each dish's name in its own
       script (Devanagari, Thai, Urdu for Hyderabadi biryani, Spanish, Italian).
+- [ ] **Sign content off.** Ingredients, allergens, stories, flavor notes and
+      cooking times are all marked _draft_ on the site ("not yet confirmed by
+      a kitchen"). When the kitchen confirms a dish, record who checked what
+      and when in `src/lib/food/content.ts`; the dish page and checkout then
+      say so. Stories need their sources cited before they're marked reviewed.
+- [ ] **Test-cook the guided recipe.** Chicken Momo is the first full guided
+      recipe (`src/lib/food/recipes.ts`). It was written from the dish's
+      ingredient list with AI assistance and hasn't been cooked. Cook it, fix
+      amounts, times and yields, then mark it reviewed. Every other dish shows
+      "Recipe coming" until its guided recipe is written and tested.
+- [ ] **Swaps.** Each swap says which allergens it removes or adds. Check them
+      when the recipe is tested.
 
 ## 4. Photos
 
@@ -90,22 +109,42 @@ See `docs/IMAGE-AUDIT.md`.
       numbers and addresses.
 
 Until this is built, checkout refuses to take orders in a real delivery area
-and says online payment isn't connected. It won't pretend to take one.
+and says online payment isn't connected. It won't pretend to take one. The
+demo checkout already shows what a real one needs: delivery window, fees, tax,
+tip and total before placing, a review step, guest checkout, and no card
+fields. A real checkout must check availability, prices, fees and delivery
+windows with the server again at the moment of payment.
 
-## 6. Delivery apps
+## 6. Integrations
+
+What real ordering has to connect to. None of it can be faked on the site.
+
+| Need                               | For example                                     | Replaces in the demo                                    |
+| ---------------------------------- | ----------------------------------------------- | ------------------------------------------------------- |
+| Kitchen menu and stock (POS)       | Square, Toast or Clover APIs, or a kitchen app  | `unavailable` and prices in `zones.ts` and `dishes.ts`  |
+| Payments                           | Stripe Checkout or Payment Element              | "Place demo order" (no card fields today)               |
+| Sales tax                          | Stripe Tax or Avalara                           | One `taxRate` per zone                                  |
+| Address check and delivery range   | Google Places or Mapbox, plus the kitchen's own radius or ZIP list | ZIP code only              |
+| Couriers and live tracking         | DoorDash Drive or Uber Direct, or own drivers   | The "How tracking will look" timeline                   |
+| Order messages                     | Email (Postmark, Resend) and SMS (Twilio)       | Nothing is sent                                         |
+| Order store and admin              | A database and a small admin, or the POS        | Demo orders kept in the browser                         |
+| Push notifications (optional)      | Web Push with VAPID keys and a small sender     | Timer alerts only, on this device                       |
+| Real-user performance              | Vercel Speed Insights                           | Lab checks in `npm run qa`                              |
+
+## 7. Delivery apps
 
 - [ ] If you're on Uber Eats, DoorDash or Grubhub, send the store-page links
       for each area. The old site linked to the apps' home pages, which proved
       nothing, so those claims were removed.
 
-## 7. Contact and company details
+## 8. Contact and company details
 
 - [ ] A contact email or phone for allergy questions and order problems
 - [ ] Legal business name and address. Needed for terms and receipts, and for
       restaurant structured data in search results. Only verified facts go in
       the structured data, so today it holds just the site's name and URL.
 
-## 8. Domain and hosting
+## 9. Domain and hosting
 
 - [ ] **Custom domain:** connect it in Vercel. Then change `SITE_URL` in
       `src/lib/site.ts` and the `Sitemap:` line in `public/robots.txt`, and run
@@ -116,7 +155,9 @@ and says online payment isn't connected. It won't pretend to take one.
 - [x] Dish photos go through Vercel Image Optimization (resized, AVIF/WebP).
       The plan includes a monthly quota; 8 photos use very little of it.
 
-## 9. After launch
+## 10. After launch
 
 - [ ] Hide the demo-mode switch once real ordering works (or keep it for staff training).
+- [ ] Watch Core Web Vitals from real visits (LCP ≤ 2.5s, INP ≤ 200ms,
+      CLS ≤ 0.1) and run `npm run qa` before each release.
 - [ ] Bring back a kitchens page if you want one, with real addresses and photos.

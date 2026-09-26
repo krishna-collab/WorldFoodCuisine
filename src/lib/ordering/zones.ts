@@ -9,6 +9,19 @@
  * ordering flow can be tried end to end; nothing is sent or charged.
  */
 
+export type OptionChoice = { id: string; label: string; priceDelta: number };
+
+/** A choice the kitchen offers on some dishes, e.g. heat level. The first choice is the default. */
+export type OptionGroup = {
+  id: string;
+  label: string;
+  /** Short explanation shown with the choices. */
+  help?: string;
+  choices: OptionChoice[];
+  /** Which dishes get it: those at or above a heat level, or a list of ids. */
+  appliesTo: { minSpice?: number; dishIds?: string[] };
+};
+
 export type DeliveryZone = {
   id: string;
   label: string;
@@ -21,6 +34,11 @@ export type DeliveryZone = {
   deliveryFee: number;
   freeDeliveryOver?: number;
   taxRate: number;
+  /** Dishes this zone's kitchen isn't making right now, with the reason customers see. */
+  unavailable?: Record<string, string>;
+  optionGroups?: OptionGroup[];
+  /** Tip choices as a percent of the subtotal. 0 means "no tip". */
+  tipPercents?: number[];
   demo: boolean;
 };
 
@@ -36,8 +54,75 @@ export const DEMO_ZONE: DeliveryZone = {
   deliveryFee: 299,
   freeDeliveryOver: 3500,
   taxRate: 0.09,
+  // One sold-out dish so the demo shows how unavailability looks.
+  unavailable: { "osso-buco": "Not on today's menu" },
+  optionGroups: [
+    {
+      id: "heat",
+      label: "Heat",
+      help: "The kitchen can make it milder, never hotter than the recipe.",
+      choices: [
+        { id: "as-written", label: "As written", priceDelta: 0 },
+        { id: "milder", label: "Milder", priceDelta: 0 },
+      ],
+      appliesTo: { minSpice: 2 },
+    },
+  ],
+  tipPercents: [0, 10, 15, 20],
   demo: true,
 };
+
+type MenuDish = { id: string; spice: number; price: number };
+
+/** Whether the zone's kitchen can make this dish now, and why not. */
+export function menuStatus(
+  dish: MenuDish,
+  zone: DeliveryZone,
+): { available: true } | { available: false; reason: string } {
+  const reason = zone.unavailable?.[dish.id];
+  return reason ? { available: false, reason } : { available: true };
+}
+
+export function optionGroupsFor(dish: MenuDish, zone: DeliveryZone): OptionGroup[] {
+  return (zone.optionGroups ?? []).filter(
+    (g) =>
+      (g.appliesTo.minSpice !== undefined && dish.spice >= g.appliesTo.minSpice) ||
+      (g.appliesTo.dishIds?.includes(dish.id) ?? false),
+  );
+}
+
+/** Default choice for every group that applies to the dish. */
+export function defaultOptions(dish: MenuDish, zone: DeliveryZone): Record<string, string> {
+  return Object.fromEntries(
+    optionGroupsFor(dish, zone).map((g) => [g.id, g.choices[0]!.id] as const),
+  );
+}
+
+/** Unit price with the chosen options, in cents. */
+export function unitPrice(
+  dish: MenuDish,
+  zone: DeliveryZone,
+  options: Record<string, string> = {},
+): number {
+  let price = dish.price;
+  for (const group of optionGroupsFor(dish, zone)) {
+    const choice = group.choices.find((c) => c.id === options[group.id]);
+    price += choice?.priceDelta ?? 0;
+  }
+  return price;
+}
+
+/** "Heat: Milder" for choices that differ from the default; empty when all are defaults. */
+export function describeOptions(
+  dish: MenuDish,
+  zone: DeliveryZone,
+  options: Record<string, string> = {},
+): string[] {
+  return optionGroupsFor(dish, zone).flatMap((group) => {
+    const choice = group.choices.find((c) => c.id === options[group.id]);
+    return choice && choice.id !== group.choices[0]!.id ? [`${group.label}: ${choice.label}`] : [];
+  });
+}
 
 /** True once at least one real kitchen is delivering. */
 export const ORDERING_LIVE = LIVE_ZONES.length > 0;
@@ -142,13 +227,21 @@ export function deliveryWindows(zone: DeliveryZone, date = new Date()): Delivery
   return windows;
 }
 
-export type PriceSummary = { subtotal: number; delivery: number; tax: number; total: number };
+export type PriceSummary = {
+  subtotal: number;
+  delivery: number;
+  tax: number;
+  tip: number;
+  total: number;
+};
 
-export function priceSummary(subtotal: number, zone: DeliveryZone): PriceSummary {
+/** Everything the customer pays, in cents. The tip is a percent of the subtotal. */
+export function priceSummary(subtotal: number, zone: DeliveryZone, tipPercent = 0): PriceSummary {
   const delivery =
     subtotal === 0 || (zone.freeDeliveryOver !== undefined && subtotal >= zone.freeDeliveryOver)
       ? 0
       : zone.deliveryFee;
   const tax = Math.round(subtotal * zone.taxRate);
-  return { subtotal, delivery, tax, total: subtotal + delivery + tax };
+  const tip = Math.round((subtotal * tipPercent) / 100);
+  return { subtotal, delivery, tax, tip, total: subtotal + delivery + tax + tip };
 }

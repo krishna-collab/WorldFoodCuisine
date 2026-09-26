@@ -3,6 +3,43 @@
 > **How to use:** keep this file in the repo root. Fill in §0.3 ("What only you can answer"), then tell your coding agent:
 > *"Read REDESIGN.md and start Phase 0."* In later sessions: *"Continue with the next phase in REDESIGN.md."*
 
+## Status (25 Sep 2026): Cook it, or get it cooked
+
+A second pass turned the site into one product with two paths per dish. What
+changed, and the decisions behind it:
+
+- **Design system** (`docs/DESIGN-SYSTEM.md`): warm paper, ink and terracotta;
+  Fraunces for headlines, Manrope for everything you read or tap; light and
+  dark themes, AA contrast throughout. The status banner is one 32px line and
+  the menu's filters live behind one button on phones, so a dish shows in the
+  first screen of every discovery page at 390px.
+- **Discovery:** filters for cuisine, flavor, heat, diet, cook time,
+  collection and "ways to get it", with counts, removable pills and shareable
+  URLs; search matches local scripts and ignores accents. Cards show one
+  flavor line; stories moved to the dish page.
+- **Dish pages:** Cook it / Get it cooked tabs on the same dish record. Price,
+  options and delivery time appear only where a kitchen, or the labeled demo,
+  serves the visitor's ZIP code.
+- **Guided cooking:** Chicken Momo first (servings, US/metric, swaps that say
+  which allergens they remove or add, timers that keep running, read aloud,
+  keep screen on, shopping list by aisle, safe resume). Written with AI
+  assistance from the dish's ingredient list and marked as a draft until it's
+  test-cooked.
+- **Demo commerce:** options, quantities, bag, checkout with delivery window,
+  fees, tax, tip and total before placing, a review step, guest checkout and
+  no card fields. Every screen says it's a demo.
+- **Content provenance:** ingredients, allergens, stories, flavor notes and
+  recipes carry a draft / reviewed / verified status and a source
+  (`src/lib/food/content.ts`). Everything is a draft until a kitchen signs it off.
+- **Images:** the 42 AI images are labeled "AI illustration"; the 8 stock photos
+  were checked again (`docs/IMAGE-AUDIT.md`). No photo catalog came with the
+  AI images, so their tool and license are still unknown.
+- **Offline:** saving a dish keeps its page, recipe and the scripts they need,
+  so a saved recipe works with no signal. The bag is kept; checkout waits for a
+  connection.
+- **QA:** `npm run qa` runs both flows, the offline checks, and axe-core
+  accessibility checks at six widths in light and dark.
+
 ## Status (24 Sep 2026)
 
 Phases 0–2 and the trust, ordering, responsive, PWA and SEO work were done in

@@ -8,14 +8,19 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   areaStatus,
+  defaultOptions,
   DEMO_ZONE,
   deliveryWindows,
+  describeOptions,
   hoursLabel,
   isOpenAt,
   LIVE_ZONES,
+  menuStatus,
   normalizePostalCode,
+  optionGroupsFor,
   priceSummary,
   timeZoneName,
+  unitPrice,
   zoneFor,
 } from "./zones.ts";
 
@@ -101,9 +106,40 @@ test("price summary: delivery fee, free-delivery threshold and tax", () => {
     subtotal: 2000,
     delivery: 299,
     tax: 180,
+    tip: 0,
     total: 2479,
   });
   assert.equal(priceSummary(3500, DEMO_ZONE).delivery, 0);
-  assert.deepEqual(priceSummary(0, DEMO_ZONE), { subtotal: 0, delivery: 0, tax: 0, total: 0 });
+  assert.deepEqual(priceSummary(0, DEMO_ZONE), {
+    subtotal: 0,
+    delivery: 0,
+    tax: 0,
+    tip: 0,
+    total: 0,
+  });
   assert.equal(priceSummary(1999, DEMO_ZONE).tax, 180);
+});
+
+test("tips are a percent of the subtotal and part of the total", () => {
+  const withTip = priceSummary(2000, DEMO_ZONE, 15);
+  assert.equal(withTip.tip, 300);
+  assert.equal(withTip.total, 2000 + 299 + 180 + 300);
+  assert.ok(DEMO_ZONE.tipPercents?.includes(0), "no tip is always a choice");
+});
+
+test("menu availability and options come from the zone", () => {
+  const hot = { id: "tikka-masala", spice: 2, price: 1500 };
+  const mild = { id: "butter-chicken", spice: 1, price: 1500 };
+  assert.deepEqual(menuStatus(hot, DEMO_ZONE), { available: true });
+  const gone = menuStatus({ id: "osso-buco", spice: 0, price: 2800 }, DEMO_ZONE);
+  assert.equal(gone.available, false);
+  assert.deepEqual(
+    optionGroupsFor(hot, DEMO_ZONE).map((g) => g.id),
+    ["heat"],
+  );
+  assert.deepEqual(optionGroupsFor(mild, DEMO_ZONE), []);
+  assert.deepEqual(defaultOptions(hot, DEMO_ZONE), { heat: "as-written" });
+  assert.equal(unitPrice(hot, DEMO_ZONE, { heat: "milder" }), 1500);
+  assert.deepEqual(describeOptions(hot, DEMO_ZONE, { heat: "as-written" }), []);
+  assert.deepEqual(describeOptions(hot, DEMO_ZONE, { heat: "milder" }), ["Heat: Milder"]);
 });

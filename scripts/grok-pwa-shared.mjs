@@ -9,8 +9,8 @@ import { join } from "node:path";
 export const DEFAULT_APP_NAME = "WorldFoodCuisine";
 /** Home-screen label: short enough that iOS and Android don't cut it off. */
 export const APP_SHORT_NAME = "WorldFood";
-/** Keep in sync with the theme-color meta in src/routes/__root.tsx. */
-export const APP_THEME_COLOR = "#09090b";
+/** Paper, the light theme background. Keep in sync with the theme-color meta in src/routes/__root.tsx. */
+export const APP_THEME_COLOR = "#f7f2ea";
 export const OG_SERVICE_URL_DEFAULT = "https://og.grok.me";
 export const OG_SITE_REL_PATH = "src/lib/og/site.json";
 
@@ -214,7 +214,7 @@ export function grokPwaHeadTags(appName = DEFAULT_APP_NAME) {
     ],
     [
       "apple-mobile-web-app-status-bar-style",
-      '<meta name="apple-mobile-web-app-status-bar-style" content="black">',
+      '<meta name="apple-mobile-web-app-status-bar-style" content="default">',
     ],
     ["theme-color", `<meta name="theme-color" content="${APP_THEME_COLOR}">`],
   ];

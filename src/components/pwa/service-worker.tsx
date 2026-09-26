@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { offlineUrlsFor, useSaved } from "@/lib/store/saved";
+import { listenForInstall } from "@/lib/pwa/install";
 
 /**
  * Registers /sw.js in production builds. When a new version has installed,
@@ -7,6 +9,7 @@ import { toast } from "sonner";
  */
 export function ServiceWorkerRegistration() {
   useEffect(() => {
+    listenForInstall();
     if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
     const sw = navigator.serviceWorker;
     const hadController = Boolean(sw.controller);
@@ -51,6 +54,9 @@ export function ServiceWorkerRegistration() {
         ...performance.getEntriesByType("resource").map((entry) => entry.name),
       ];
       registration.active?.postMessage({ type: "CACHE_URLS", urls });
+      // Saved dishes stay available offline, including ones saved on an older version.
+      const saved = useSaved.getState().ids.flatMap(offlineUrlsFor);
+      if (saved.length) registration.active?.postMessage({ type: "SAVE_URLS", urls: saved });
     });
 
     return () => sw.removeEventListener("controllerchange", onControllerChange);

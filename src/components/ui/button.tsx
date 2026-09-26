@@ -3,23 +3,33 @@ import { Slot } from "@radix-ui/react-slot";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 font-medium transition-[opacity,transform,background-color,color,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-40 active:not-disabled:scale-[0.96]",
+/**
+ * Buttons. Pill-shaped and at least 40px tall (44px from `md`) so they are
+ * easy to hit with a thumb. `herb` starts the "Cook it" path and `clay` the
+ * "Get it cooked" path; everything else is ink on paper.
+ */
+export const buttonVariants = cva(
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap transition-[opacity,transform,background-color,color,box-shadow] duration-150 ease-out disabled:pointer-events-none disabled:opacity-45 active:not-disabled:scale-[0.97] [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         primary: "bg-primary text-primary-fg hover:opacity-90",
         secondary:
-          "bg-elevated text-fg shadow-[var(--shadow-border)] hover:shadow-[var(--shadow-border-hover)]",
-        ghost: "bg-transparent text-fg hover:bg-elevated",
-        outline: "bg-transparent text-fg shadow-[var(--shadow-border)] hover:bg-elevated",
-        danger: "bg-elevated text-fg shadow-[var(--shadow-border)]",
+          "bg-surface text-fg shadow-[inset_0_0_0_1px_var(--color-border-strong)] hover:bg-sunken",
+        ghost: "bg-transparent text-fg hover:bg-sunken",
+        outline: "bg-transparent text-fg shadow-[inset_0_0_0_1px_var(--color-control)] hover:bg-sunken",
+        herb: "bg-herb text-herb-fg hover:opacity-90",
+        clay: "bg-clay text-clay-fg hover:opacity-90",
+        warn: "bg-warn-bg text-warn-fg shadow-[inset_0_0_0_1px_var(--color-warn-border)] hover:opacity-90",
       },
       size: {
-        sm: "h-11 rounded-md px-3.5 text-sm",
-        md: "h-11 rounded-md px-4 text-sm",
-        lg: "h-12 rounded-lg px-5 text-[0.9375rem]",
-        icon: "size-11 rounded-md",
+        sm: "h-10 px-4 text-sm",
+        md: "h-11 px-5 text-sm",
+        lg: "h-12 px-6 text-[0.9375rem]",
+        xl: "h-14 px-7 text-base",
+        icon: "size-11",
+        "icon-sm": "size-10",
+        "icon-xl": "size-16",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
@@ -31,8 +41,15 @@ export function Button({
   variant,
   size,
   asChild,
+  type,
   ...props
 }: ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+  return (
+    <Comp
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...(asChild ? {} : { type: type ?? "button" })}
+      {...props}
+    />
+  );
 }

@@ -27,26 +27,25 @@ function IngredientsPage() {
   }, [all, q]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 2xl:max-w-[1536px]">
-      <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-        What’s in our food
-      </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
+    <div className="gutter mx-auto max-w-[90rem] pt-8 lg:pt-12">
+      <p className="eyebrow text-accent">Nothing to hide</p>
+      <h1 className="mt-3 text-display-xl">What’s in our food</h1>
+      <p className="mt-5 max-w-2xl text-lede text-muted">
         You should know what you’re eating. Every dish lists its ingredients component by component,
         including each spice in the blends, the fat it’s cooked in and its allergens.
       </p>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-3">
+      <ol className="mt-12 grid gap-8 md:grid-cols-3">
         {KITCHEN_PROMISE.map((p) => (
-          <div key={p.title} className="rounded-2xl bg-surface p-5 shadow-[var(--shadow-border)]">
-            <h2 className="font-display text-xl font-semibold tracking-tight">{p.title}</h2>
+          <li key={p.title} className="border-t-2 border-fg pt-4">
+            <h2 className="text-display-s">{p.title}</h2>
             <p className="mt-2 leading-relaxed text-muted">{p.body}</p>
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
 
       <section aria-labelledby="allergens" className="mt-14 max-w-3xl">
-        <h2 id="allergens" className="font-display text-2xl font-semibold tracking-tight">
+        <h2 id="allergens" className="text-display-m">
           Allergens
         </h2>
         <p className="mt-2 leading-relaxed text-muted">
@@ -57,7 +56,7 @@ function IngredientsPage() {
       </section>
 
       <section aria-labelledby="index" className="mt-14">
-        <h2 id="index" className="font-display text-2xl font-semibold tracking-tight">
+        <h2 id="index" className="text-display-m">
           Every ingredient on the menu
         </h2>
         <p className="mt-2 text-muted">
@@ -82,7 +81,7 @@ function IngredientsPage() {
               <Link
                 to="/menu"
                 search={{ q: ing.name }}
-                className="text-fg underline-offset-4 hover:underline"
+                className="text-fg underline-offset-4 hover:text-accent hover:underline"
               >
                 {ing.name}
               </Link>{" "}

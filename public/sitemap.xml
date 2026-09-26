@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://world-food-cuisine.vercel.app/</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/menu</loc></url>
+  <url><loc>https://world-food-cuisine.vercel.app/cook</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/ingredients</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/delivery</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/menu/india</loc></url>
@@ -59,4 +60,5 @@
   <url><loc>https://world-food-cuisine.vercel.app/dish/eggplant-parmigiana</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/dish/tiramisu</loc></url>
   <url><loc>https://world-food-cuisine.vercel.app/dish/burrata-caprese</loc></url>
+  <url><loc>https://world-food-cuisine.vercel.app/dish/chicken-momo/cook</loc></url>
 </urlset>

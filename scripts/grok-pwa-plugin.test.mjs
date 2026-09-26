@@ -484,8 +484,8 @@ test("renders the WorldFoodCuisine manifest on its own domains", () => {
   const manifest = JSON.parse(renderWebManifest("world-food-cuisine.vercel.app"));
   assert.equal(manifest.name, "WorldFoodCuisine");
   assert.equal(manifest.short_name, "WorldFood");
-  assert.equal(manifest.theme_color, "#09090b");
-  assert.equal(manifest.background_color, "#09090b");
+  assert.equal(manifest.theme_color, "#f7f2ea");
+  assert.equal(manifest.background_color, "#f7f2ea");
   const sizes = manifest.icons.map((icon) => icon.sizes);
   assert.ok(sizes.includes("192x192"));
   assert.ok(sizes.includes("512x512"));

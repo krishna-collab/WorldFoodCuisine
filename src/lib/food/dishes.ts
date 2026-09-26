@@ -1,7 +1,7 @@
-import type { Dish } from "./types.ts";
+import type { DishRecord } from "./types.ts";
 import { generated, representative } from "./images.ts";
 
-export const dishes: Dish[] = [
+export const dishRecords: DishRecord[] = [
   // ─── India ────────────────────────────────────────────────────────────────
   {
     id: "butter-chicken",
