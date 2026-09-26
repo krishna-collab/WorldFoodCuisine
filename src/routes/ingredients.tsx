@@ -50,8 +50,8 @@ function IngredientsPage() {
         </h2>
         <p className="mt-2 leading-relaxed text-muted">
           Each dish lists which of the nine major US allergens it contains:{" "}
-          {Object.values(allergenLabels).join(", ")}. Recipes are still being finalized, and
-          allergens will be confirmed with the kitchen before any dish goes on sale.
+          {Object.values(allergenLabels).join(", ")}. Ingredient lists are still drafts, and
+          allergens will be confirmed with each kitchen before any dish goes on sale.
         </p>
       </section>
 

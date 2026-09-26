@@ -5,14 +5,14 @@ import type { ContentRecord, ContentStatus, DishContent, DishRecord } from "./ty
  * Where each kind of food content comes from and who has checked it.
  *
  * Today everything is a draft: no kitchen is cooking yet, so nobody has
- * confirmed the recipes or allergens against real plates. When a kitchen
+ * confirmed the ingredients or allergens against real plates. When a kitchen
  * signs a dish off, add it to CHECKED with who checked what and when; the
  * dish page and checkout then show "confirmed by …" instead of "draft".
  */
 const DEFAULTS: DishContent = {
   ingredients: {
     status: "draft",
-    source: "WorldFoodCuisine's draft recipe for this dish, September 2026",
+    source: "WorldFoodCuisine's draft ingredient list for this dish, September 2026",
   },
   allergens: {
     status: "draft",

@@ -11,15 +11,14 @@ export type MenuSearch = {
   taste?: string;
   diet?: string;
   heat?: number;
-  time?: number;
-  ways?: string;
+  /** Only dishes the visitor's kitchen is making today. */
+  available?: boolean;
   collection?: string;
   sort?: SortKey;
 };
 
-export type SortKey = "menu" | "quickest" | "mildest" | "hottest";
-export type Way = "recipe" | "order";
-export type FilterGroup = "cuisine" | "taste" | "diet" | "heat" | "time" | "ways" | "collection";
+export type SortKey = "menu" | "price" | "mildest" | "hottest";
+export type FilterGroup = "cuisine" | "taste" | "diet" | "heat" | "available" | "collection";
 
 export type MenuFilters = {
   q: string;
@@ -28,16 +27,14 @@ export type MenuFilters = {
   diets: DietTag[];
   /** Highest heat level to include, 0–3. */
   heat?: number;
-  /** Longest total cooking time to include, in minutes. */
-  time?: number;
-  ways: Way[];
+  /** Only dishes the visitor's kitchen has on today. */
+  available: boolean;
   collection?: string;
   sort: SortKey;
 };
 
 const DIETS: DietTag[] = ["vegetarian", "vegan", "gluten-free"];
-const WAYS: Way[] = ["recipe", "order"];
-const SORTS: SortKey[] = ["menu", "quickest", "mildest", "hottest"];
+const SORTS: SortKey[] = ["menu", "price", "mildest", "hottest"];
 
 const list = <T extends string>(value: unknown, allowed: (v: string) => v is T): T[] =>
   typeof value === "string"
@@ -46,7 +43,6 @@ const list = <T extends string>(value: unknown, allowed: (v: string) => v is T):
 
 const isTaste = (v: string): v is Taste => (TASTES as string[]).includes(v);
 const isDiet = (v: string): v is DietTag => (DIETS as string[]).includes(v);
-const isWay = (v: string): v is Way => (WAYS as string[]).includes(v);
 
 /** Validate raw URL search params; unknown values are dropped, not errors. */
 export function validateMenuSearch(search: Record<string, unknown>): MenuSearch {
@@ -62,8 +58,7 @@ export function validateMenuSearch(search: Record<string, unknown>): MenuSearch 
     taste: joined(list(search.taste, isTaste)),
     diet: joined(list(search.diet, isDiet)),
     heat: num(search.heat, [0, 1, 2]),
-    time: num(search.time, [30, 60, 120]),
-    ways: joined(list(search.ways, isWay)),
+    available: [true, "true", 1, "1"].includes(search.available as never) ? true : undefined,
     collection:
       typeof search.collection === "string" && search.collection in collectionById
         ? search.collection
@@ -79,8 +74,7 @@ export function parseFilters(search: MenuSearch): MenuFilters {
     tastes: list(search.taste, isTaste),
     diets: list(search.diet, isDiet),
     heat: search.heat,
-    time: search.time,
-    ways: list(search.ways, isWay),
+    available: search.available === true,
     collection: search.collection,
     sort: search.sort ?? "menu",
   };
@@ -93,13 +87,17 @@ export function activeFilterCount(f: MenuFilters): number {
     f.tastes.length +
     f.diets.length +
     (f.heat !== undefined ? 1 : 0) +
-    (f.time !== undefined ? 1 : 0) +
-    f.ways.length +
+    (f.available ? 1 : 0) +
     (f.collection ? 1 : 0)
   );
 }
 
-type Context = { orderable: (dish: Dish) => boolean };
+/**
+ * What depends on the visitor's kitchen: whether it's making a dish today,
+ * and its price there. Without a kitchen nothing is "available" and price
+ * sorting keeps menu order (prices aren't shown).
+ */
+type Context = { orderable: (dish: Dish) => boolean; price?: (dish: Dish) => number };
 
 function passes(dish: Dish, f: MenuFilters, ctx: Context, skip?: FilterGroup): boolean {
   if (skip !== "cuisine" && f.cuisines.length && !f.cuisines.includes(dish.cuisine)) return false;
@@ -107,11 +105,7 @@ function passes(dish: Dish, f: MenuFilters, ctx: Context, skip?: FilterGroup): b
     return false;
   if (skip !== "diet" && f.diets.some((d) => !dish.diet.includes(d))) return false;
   if (skip !== "heat" && f.heat !== undefined && dish.spice > f.heat) return false;
-  if (skip !== "time" && f.time !== undefined && dish.time.total > f.time) return false;
-  if (skip !== "ways") {
-    if (f.ways.includes("recipe") && !dish.hasRecipe) return false;
-    if (f.ways.includes("order") && !ctx.orderable(dish)) return false;
-  }
+  if (skip !== "available" && f.available && !ctx.orderable(dish)) return false;
   if (skip !== "collection" && f.collection) {
     const ids = collectionById[f.collection]?.dishIds ?? [];
     if (!ids.includes(dish.id)) return false;
@@ -119,10 +113,11 @@ function passes(dish: Dish, f: MenuFilters, ctx: Context, skip?: FilterGroup): b
   return true;
 }
 
-function sortResults(results: SearchResult[], sort: SortKey): SearchResult[] {
+function sortResults(results: SearchResult[], sort: SortKey, ctx: Context): SearchResult[] {
   if (sort === "menu") return results;
   const copy = [...results];
-  if (sort === "quickest") copy.sort((a, b) => a.dish.time.total - b.dish.time.total);
+  const price = ctx.price;
+  if (sort === "price" && price) copy.sort((a, b) => price(a.dish) - price(b.dish));
   if (sort === "mildest") copy.sort((a, b) => a.dish.spice - b.dish.spice);
   if (sort === "hottest") copy.sort((a, b) => b.dish.spice - a.dish.spice);
   return copy;
@@ -135,7 +130,7 @@ export function filterDishes(
   pool: Dish[] = allDishes,
 ): SearchResult[] {
   const kept = pool.filter((d) => passes(d, f, ctx));
-  return sortResults(searchDishes(f.q, kept), f.sort);
+  return sortResults(searchDishes(f.q, kept), f.sort, ctx);
 }
 
 /**

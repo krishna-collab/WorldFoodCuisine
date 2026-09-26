@@ -1,4 +1,3 @@
-import { useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { LocationDialog } from "@/components/ordering/location-dialog";
 import { StatusLine } from "@/components/ordering/status-line";
@@ -18,27 +17,15 @@ function SkipLink() {
   );
 }
 
-/** Cook mode is a focused, full-screen page with its own controls. */
-const FOCUSED = /^\/dish\/[^/]+\/cook\/?$/;
-
 export function AppShell({ children }: { children: ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  if (FOCUSED.test(pathname)) {
-    return (
-      <div className="min-h-dvh bg-bg text-fg">
-        <SkipLink />
-        <main id="main">{children}</main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
       <SkipLink />
       <StatusLine />
       <SiteHeader />
-      <main id="main" className="flex-1">
+      {/* At least a screen tall, so the footer never starts on screen and then
+          jumps when content that waits for this browser's data appears (CLS). */}
+      <main id="main" className="min-h-dvh flex-1">
         {children}
       </main>
       <SiteFooter />

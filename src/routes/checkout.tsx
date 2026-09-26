@@ -81,12 +81,12 @@ function CheckoutPage() {
   if (area.kind === "unserved") {
     return (
       <Notice
-        title={`We’re not delivering to ${area.postalCode} yet`}
+        title={`No kitchen delivers to ${area.postalCode} yet`}
         body="No kitchen delivers to that ZIP code yet, so this bag can’t be ordered. It stays saved on this device."
       >
         <Button onClick={openDialog}>Try another ZIP</Button>
         <Button asChild variant="secondary">
-          <Link to="/delivery">How ordering will work</Link>
+          <Link to="/delivery">Locations</Link>
         </Button>
       </Notice>
     );
@@ -100,7 +100,7 @@ function CheckoutPage() {
         body={`We deliver to ${area.postalCode}, but online payment isn’t connected yet, so orders can’t be placed on the site.`}
       >
         <Button asChild variant="secondary">
-          <Link to="/menu">Back to dishes</Link>
+          <Link to="/menu">Back to the menu</Link>
         </Button>
       </Notice>
     );
@@ -285,9 +285,14 @@ function DemoCheckout({ zone, postalCode, items }: { zone: DeliveryZone; postalC
   const [tipPercent, setTipPercent] = useState(0);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
 
-  const summary = priceSummary(cartSubtotal(items, zone), zone, tipPercent);
-  const allergens = bagAllergens(items);
   const unavailable = items.filter((i) => !menuStatus(dishById[i.dishId]!, zone).available);
+  // Dishes this kitchen isn't making don't count toward the price.
+  const summary = priceSummary(
+    cartSubtotal(items.filter((i) => !unavailable.includes(i)), zone),
+    zone,
+    tipPercent,
+  );
+  const allergens = bagAllergens(items);
   const openNow = isOpenAt(zone, now);
   const chosenWindow = windows.find((w) => w.value === windowValue);
   const anyDraft = items.some((i) => dishById[i.dishId]?.content.allergens.status === "draft");
@@ -411,7 +416,7 @@ function DemoCheckout({ zone, postalCode, items }: { zone: DeliveryZone; postalC
               </p>
               <p className="mt-2 text-sm text-muted">
                 {anyDraft
-                  ? `${describeRecord({ status: "draft", source: "" })}: worked out from our recipes. A real kitchen confirms allergens and shared-equipment risks before taking orders.`
+                  ? `${describeRecord({ status: "draft", source: "" })}: worked out from our ingredient lists. A real kitchen confirms allergens and shared-equipment risks before taking orders.`
                   : "Confirmed by the kitchen for every dish in this order."}
               </p>
             </section>

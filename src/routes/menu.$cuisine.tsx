@@ -120,8 +120,8 @@ function CuisinePage() {
               Ingredients that recur here
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Counted from the {list.length} recipes: what shows up again and again in {cuisine.name}
-              ’s dishes and rarely elsewhere on the menu.
+              Counted from the {list.length} dishes’ ingredient lists: what shows up again and again
+              in {cuisine.name}’s dishes and rarely elsewhere on the menu.
             </p>
             <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
               {signature.map((s) => (

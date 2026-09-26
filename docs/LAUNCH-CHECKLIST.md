@@ -7,12 +7,14 @@ try the ordering flow; it's clearly labeled, and nothing is sent or charged.
 
 Items marked **Blocks ordering** must be done before the first real order.
 
-## 1. Kitchen and delivery areas (Blocks ordering)
+## 1. Kitchens and delivery areas (Blocks ordering)
 
-For each kitchen:
+WorldFoodCuisine is delivery-only: each franchise location is a kitchen with no
+dining room, and one kitchen serves each ZIP code. For each kitchen:
 
+- [ ] Its name as customers should see it (e.g. "Mission St. kitchen")
 - [ ] Kitchen address (used for delivery range and sales tax; not shown unless you want it shown)
-- [ ] The exact ZIP codes it delivers to
+- [ ] The exact ZIP codes it delivers to, and a one-line description of the area for the Locations page
 - [ ] Opening hours and time zone. The zone model assumes the same hours every
       day; if hours differ by weekday, that's a small code change
 - [ ] Delivery fee, any free-delivery minimum, and the usual delivery time range
@@ -24,13 +26,14 @@ time zone and tax rate. Once a zone exists:
 
 - those ZIP codes see real prices, fees, tax and delivery times;
 - every other ZIP still gets "not delivering here yet";
-- the Get it cooked page lists the areas;
+- the Locations page lists the kitchen and its area;
 - the "Not delivering yet" status line disappears.
 
 Also per kitchen, for the dish page and checkout:
 
 - [ ] Which dishes it makes each day, and how it will tell the site when one
       sells out (today that's `unavailable` on the zone, edited by hand)
+- [ ] Any dish it prices differently from the menu (`priceOverrides` on the zone)
 - [ ] Options it really offers (the demo offers "milder" for spicy dishes)
 - [ ] Tip choices, and whether tips go to couriers in full
 
@@ -42,11 +45,12 @@ Also per kitchen, for the dish page and checkout:
       area can be ordered right now; if some should stay "coming soon", that's
       a small change (an on-sale flag per dish).
 
-## 3. Recipes and allergens (Blocks ordering)
+## 3. Ingredients and allergens (Blocks ordering)
 
 Each dish lists its ingredients component by component, its cooking fat (olive
 oil, butter or ghee), its allergens and its diet tags. The kitchen needs to
-confirm all of it against the real recipes. Points to check first:
+confirm all of it against the real recipes, and every franchise kitchen has
+to cook to the same list. Points to check first:
 
 - [ ] **Asafoetida** is listed as "pure dried resin, no flour added". Most store-bought
       asafoetida contains wheat flour, which would make those dishes not gluten-free.
@@ -70,18 +74,10 @@ confirm all of it against the real recipes. Points to check first:
 - [ ] Check local rules for allergen and ingredient disclosure on online menus.
 - [ ] **Native names:** have a native speaker check each dish's name in its own
       script (Devanagari, Thai, Urdu for Hyderabadi biryani, Spanish, Italian).
-- [ ] **Sign content off.** Ingredients, allergens, stories, flavor notes and
-      cooking times are all marked _draft_ on the site ("not yet confirmed by
-      a kitchen"). When the kitchen confirms a dish, record who checked what
+- [ ] **Sign content off.** Ingredients, allergens, stories and flavor notes
+      are all marked _draft_ on the site ("not yet confirmed by a kitchen"). When the kitchen confirms a dish, record who checked what
       and when in `src/lib/food/content.ts`; the dish page and checkout then
       say so. Stories need their sources cited before they're marked reviewed.
-- [ ] **Test-cook the guided recipe.** Chicken Momo is the first full guided
-      recipe (`src/lib/food/recipes.ts`). It was written from the dish's
-      ingredient list with AI assistance and hasn't been cooked. Cook it, fix
-      amounts, times and yields, then mark it reviewed. Every other dish shows
-      "Recipe coming" until its guided recipe is written and tested.
-- [ ] **Swaps.** Each swap says which allergens it removes or adds. Check them
-      when the recipe is tested.
 
 ## 4. Photos
 
@@ -128,7 +124,8 @@ What real ordering has to connect to. None of it can be faked on the site.
 | Couriers and live tracking         | DoorDash Drive or Uber Direct, or own drivers   | The "How tracking will look" timeline                   |
 | Order messages                     | Email (Postmark, Resend) and SMS (Twilio)       | Nothing is sent                                         |
 | Order store and admin              | A database and a small admin, or the POS        | Demo orders kept in the browser                         |
-| Push notifications (optional)      | Web Push with VAPID keys and a small sender     | Timer alerts only, on this device                       |
+| Order routing to each kitchen      | Each franchise's POS or a kitchen tablet app    | Nothing reaches a kitchen                               |
+| Order-status notifications         | Web Push with VAPID keys and a small sender     | Nothing: the confirmation page shows a preview          |
 | Real-user performance              | Vercel Speed Insights                           | Lab checks in `npm run qa`                              |
 
 ## 7. Delivery apps

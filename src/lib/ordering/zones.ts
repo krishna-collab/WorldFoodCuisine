@@ -1,12 +1,19 @@
 /**
- * Delivery zones decide where ordering is possible and what it costs.
+ * Kitchens decide where ordering is possible and what it costs.
  *
- * LIVE_ZONES is empty on purpose: no kitchen is delivering yet, so every
- * ZIP code gets an honest "not delivering here yet". When a real kitchen
- * opens, add its zone here with real postal codes, hours, fees and tax.
+ * WorldFoodCuisine is delivery-only: every location is a franchise kitchen
+ * with no dining room. Each kitchen delivers to its own ZIP codes, keeps its
+ * own hours and fees, sets its menu for the day (what's sold out) and may
+ * price a dish differently from the menu's base price. One kitchen serves
+ * each ZIP code.
  *
- * DEMO_ZONE is only used when a visitor turns on demo mode. It exists so the
- * ordering flow can be tried end to end; nothing is sent or charged.
+ * LIVE_ZONES is empty on purpose: no kitchen is open yet, so every ZIP code
+ * gets an honest "no kitchen delivers here yet". When a real kitchen opens,
+ * add it here with its real ZIP codes, hours, fees and tax.
+ *
+ * DEMO_KITCHENS are only used when a visitor turns on demo mode: two example
+ * kitchens with different menus, prices, hours and fees, so ordering across
+ * locations can be tried end to end. Nothing is sent or charged.
  */
 
 export type OptionChoice = { id: string; label: string; priceDelta: number };
@@ -22,11 +29,17 @@ export type OptionGroup = {
   appliesTo: { minSpice?: number; dishIds?: string[] };
 };
 
+/** One kitchen (franchise location) and the area it delivers to. */
 export type DeliveryZone = {
   id: string;
+  /** The kitchen's name as customers see it, e.g. "Mission St. kitchen". */
   label: string;
+  /** The delivery area in words, for the Locations page. */
+  areaLabel: string;
   /** Exact 5-digit ZIP codes served, or "any" (demo only). */
   postalCodes: string[] | "any";
+  /** Or every ZIP code starting with one of these, e.g. "951". */
+  postalPrefixes?: string[];
   timeZone: string;
   /** Daily opening hours in the zone's time zone, 24-hour "HH:MM". */
   hours: { open: string; close: string };
@@ -34,8 +47,10 @@ export type DeliveryZone = {
   deliveryFee: number;
   freeDeliveryOver?: number;
   taxRate: number;
-  /** Dishes this zone's kitchen isn't making right now, with the reason customers see. */
+  /** Dishes this kitchen isn't making today, with the reason customers see. */
   unavailable?: Record<string, string>;
+  /** This kitchen's price for a dish when it differs from the menu's base price, in cents. */
+  priceOverrides?: Record<string, number>;
   optionGroups?: OptionGroup[];
   /** Tip choices as a percent of the subtotal. 0 means "no tip". */
   tipPercents?: number[];
@@ -44,33 +59,60 @@ export type DeliveryZone = {
 
 export const LIVE_ZONES: DeliveryZone[] = [];
 
-export const DEMO_ZONE: DeliveryZone = {
-  id: "demo",
-  label: "Demo area",
-  postalCodes: "any",
+const DEMO_HEAT: OptionGroup = {
+  id: "heat",
+  label: "Heat",
+  help: "The kitchen can make it milder, never hotter than the dish is meant to be.",
+  choices: [
+    { id: "as-written", label: "As written", priceDelta: 0 },
+    { id: "milder", label: "Milder", priceDelta: 0 },
+  ],
+  appliesTo: { minSpice: 2 },
+};
+
+export const DEMO_WEST: DeliveryZone = {
+  id: "demo-west",
+  label: "Demo kitchen West",
+  areaLabel: "ZIP codes starting with 8 or 9",
+  postalCodes: [],
+  postalPrefixes: ["8", "9"],
   timeZone: "America/Los_Angeles",
   hours: { open: "11:00", close: "21:30" },
   etaMinutes: [35, 50],
   deliveryFee: 299,
   freeDeliveryOver: 3500,
   taxRate: 0.09,
-  // One sold-out dish so the demo shows how unavailability looks.
-  unavailable: { "osso-buco": "Not on today's menu" },
-  optionGroups: [
-    {
-      id: "heat",
-      label: "Heat",
-      help: "The kitchen can make it milder, never hotter than the recipe.",
-      choices: [
-        { id: "as-written", label: "As written", priceDelta: 0 },
-        { id: "milder", label: "Milder", priceDelta: 0 },
-      ],
-      appliesTo: { minSpice: 2 },
-    },
-  ],
+  // A sold-out dish, so the demo shows how a kitchen's menu for the day looks.
+  unavailable: { "osso-buco": "Sold out today" },
+  optionGroups: [DEMO_HEAT],
   tipPercents: [0, 10, 15, 20],
   demo: true,
 };
+
+export const DEMO_EAST: DeliveryZone = {
+  id: "demo-east",
+  label: "Demo kitchen East",
+  areaLabel: "Every other ZIP code",
+  postalCodes: "any",
+  timeZone: "America/New_York",
+  hours: { open: "11:30", close: "22:00" },
+  etaMinutes: [30, 45],
+  deliveryFee: 349,
+  freeDeliveryOver: 4000,
+  taxRate: 0.08875,
+  // A different menu for the day and two local prices, to show kitchens differ.
+  unavailable: {
+    "mole-poblano": "Sold out today",
+    tiramisu: "Not on this kitchen’s menu",
+  },
+  priceOverrides: { "chicken-momo": 1350, "pad-thai": 1550 },
+  optionGroups: [DEMO_HEAT],
+  tipPercents: [0, 10, 15, 20],
+  demo: true,
+};
+
+/** Specific kitchens first; the catch-all ("any") last. */
+export const DEMO_KITCHENS: DeliveryZone[] = [DEMO_WEST, DEMO_EAST];
 
 type MenuDish = { id: string; spice: number; price: number };
 
@@ -104,7 +146,7 @@ export function unitPrice(
   zone: DeliveryZone,
   options: Record<string, string> = {},
 ): number {
-  let price = dish.price;
+  let price = zone.priceOverrides?.[dish.id] ?? dish.price;
   for (const group of optionGroupsFor(dish, zone)) {
     const choice = group.choices.find((c) => c.id === options[group.id]);
     price += choice?.priceDelta ?? 0;
@@ -133,12 +175,19 @@ export function normalizePostalCode(input: string): string | null {
   return match ? match[1]! : null;
 }
 
-export function zoneFor(postalCode: string, demo: boolean): DeliveryZone | null {
-  const live = LIVE_ZONES.find(
-    (z) => z.postalCodes === "any" || z.postalCodes.includes(postalCode),
+function serves(zone: DeliveryZone, postalCode: string): boolean {
+  return (
+    zone.postalCodes === "any" ||
+    zone.postalCodes.includes(postalCode) ||
+    (zone.postalPrefixes ?? []).some((prefix) => postalCode.startsWith(prefix))
   );
+}
+
+/** The kitchen that delivers to a ZIP code: a real one, else (in demo mode) a demo kitchen. */
+export function zoneFor(postalCode: string, demo: boolean): DeliveryZone | null {
+  const live = LIVE_ZONES.find((z) => serves(z, postalCode));
   if (live) return live;
-  return demo ? DEMO_ZONE : null;
+  return demo ? (DEMO_KITCHENS.find((z) => serves(z, postalCode)) ?? null) : null;
 }
 
 export type AreaStatus =

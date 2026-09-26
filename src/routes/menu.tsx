@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, useChildMatches, useNavigate } from "@tanstack/react-router";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { type ReactNode, useDeferredValue, useId, useMemo, useState } from "react";
 import { DishCard } from "@/components/food/dish-card";
+import { KitchenLine } from "@/components/ordering/kitchen-line";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
@@ -13,7 +14,6 @@ import {
   dishes,
   TASTES,
   tasteLabels,
-  TIME_LIMITS,
 } from "@/lib/food/data";
 import {
   activeFilterCount,
@@ -27,18 +27,18 @@ import {
   validateMenuSearch,
 } from "@/lib/food/filters";
 import type { DietTag, Dish } from "@/lib/food/types";
-import { menuStatus } from "@/lib/ordering/zones";
+import { defaultOptions, menuStatus, unitPrice } from "@/lib/ordering/zones";
 import { pageHead } from "@/lib/site";
-import { useAreaStatus } from "@/lib/store/delivery-area";
+import { useAreaStatus, useDeliveryArea } from "@/lib/store/delivery-area";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/menu")({
   validateSearch: (search: Record<string, unknown>): MenuSearch => validateMenuSearch(search),
   head: () =>
     pageHead({
-      title: "Dishes: find something to cook or order",
+      title: "Menu: 50 dishes to order for delivery",
       description:
-        "Search 50 dishes from India, Nepal, Thailand, Mexico and Italy by name, local name or ingredient. Filter by cuisine, flavor, heat, diet and time to cook.",
+        "Search 50 dishes from India, Nepal, Thailand, Mexico and Italy by name, local name or ingredient. Filter by cuisine, flavor, heat, diet and what the kitchen near you is making today.",
       path: "/menu",
     }),
   component: MenuRoute,
@@ -59,7 +59,7 @@ const HEAT = [
 ] as const;
 const SORT_LABELS: Record<SortKey, string> = {
   menu: "Menu order",
-  quickest: "Quickest to cook",
+  price: "Lowest price",
   mildest: "Mildest first",
   hottest: "Hottest first",
 };
@@ -83,33 +83,37 @@ function FilterPanel({
   f,
   update,
   orderable,
-  servedLabel,
+  kitchen,
 }: {
   f: MenuFilters;
   update: (patch: Partial<MenuSearch>) => void;
   orderable: (d: Dish) => boolean;
-  servedLabel: string | null;
+  /** The kitchen that delivers to the visitor, or null before a ZIP is set. */
+  kitchen: string | null;
 }) {
   const ctx = { orderable };
   const count = (group: FilterGroup, test: (d: Dish) => boolean) => facetCount(f, ctx, group, test);
+  const openDialog = useDeliveryArea((s) => s.openDialog);
   return (
     <div className="flex flex-col gap-5">
-      <FilterSection title="Ways to get it">
-        <Chip
-          active={f.ways.includes("recipe")}
-          onClick={() => update({ ways: join(toggle(f.ways, "recipe")) })}
-          count={count("ways", (d) => d.hasRecipe && (!f.ways.includes("order") || orderable(d)))}
-        >
-          Guided recipe
-        </Chip>
-        <Chip
-          active={f.ways.includes("order")}
-          disabled={!servedLabel && !f.ways.includes("order")}
-          onClick={() => update({ ways: join(toggle(f.ways, "order")) })}
-          count={servedLabel ? count("ways", (d) => orderable(d) && (!f.ways.includes("recipe") || d.hasRecipe)) : undefined}
-        >
-          {servedLabel ?? "Order to your door"}
-        </Chip>
+      <FilterSection
+        title={kitchen ?? "Your kitchen"}
+        hint={kitchen ? undefined : "Each kitchen has its own menu for the day. Enter your ZIP to see what the one near you is making."}
+      >
+        {kitchen ? (
+          <Chip
+            active={f.available}
+            onClick={() => update({ available: f.available ? undefined : true })}
+            count={count("available", (d) => orderable(d))}
+          >
+            On today’s menu
+          </Chip>
+        ) : (
+          <Button variant="secondary" size="sm" onClick={openDialog}>
+            <MapPin className="size-4" aria-hidden="true" />
+            Check your ZIP
+          </Button>
+        )}
       </FilterSection>
       <FilterSection title="Cuisine">
         {cuisines.map((c) => (
@@ -161,21 +165,6 @@ function FilterPanel({
           </Chip>
         ))}
       </FilterSection>
-      <FilterSection
-        title="Time to cook at home"
-        hint="Start to finish, including marinating. Overnight soaking isn’t counted; each dish says if it needs it."
-      >
-        {TIME_LIMITS.map((t) => (
-          <Chip
-            key={t.value}
-            active={f.time === t.value}
-            onClick={() => update({ time: f.time === t.value ? undefined : t.value })}
-            count={count("time", (d) => d.time.total <= t.value)}
-          >
-            {t.label}
-          </Chip>
-        ))}
-      </FilterSection>
       <FilterSection title="Collections">
         {collections.map((c) => (
           <Chip
@@ -205,15 +194,21 @@ function MenuPage() {
     () => (d: Dish) => area.kind === "served" && menuStatus(d, area.zone).available,
     [area],
   );
-  const servedLabel =
-    area.kind === "served" ? `Order to ${area.postalCode}${area.zone.demo ? " (demo)" : ""}` : null;
+  const price = useMemo(
+    () =>
+      area.kind === "served"
+        ? (d: Dish) => unitPrice(d, area.zone, defaultOptions(d, area.zone))
+        : undefined,
+    [area],
+  );
+  const kitchen = area.kind === "served" ? area.zone.label : null;
 
   const update = (patch: Partial<MenuSearch>) =>
     void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
   const clearAll = () =>
     void navigate({ search: { q: search.q }, replace: true, resetScroll: false });
 
-  const results = useMemo(() => filterDishes(f, { orderable }), [f, orderable]);
+  const results = useMemo(() => filterDishes(f, { orderable, price }), [f, orderable, price]);
   // Chips, counts and pills update at once; the grid of cards follows a moment
   // later without blocking the tap (keeps interactions fast on slower phones).
   const shown = useDeferredValue(results);
@@ -223,11 +218,9 @@ function MenuPage() {
 
   // Active filters as removable pills.
   const pills: { key: string; label: string; remove: () => void }[] = [
-    ...f.ways.map((w) => ({
-      key: `w-${w}`,
-      label: w === "recipe" ? "Guided recipe" : (servedLabel ?? "Order to your door"),
-      remove: () => update({ ways: join(f.ways.filter((x) => x !== w)) }),
-    })),
+    ...(f.available
+      ? [{ key: "available", label: "On today’s menu", remove: () => update({ available: undefined }) }]
+      : []),
     ...f.cuisines.map((c) => ({
       key: `c-${c}`,
       label: cuisines.find((x) => x.id === c)!.name,
@@ -246,20 +239,18 @@ function MenuPage() {
       label: dietLabels[d],
       remove: () => update({ diet: join(f.diets.filter((x) => x !== d)) }),
     })),
-    ...(f.time !== undefined
-      ? [{ key: "time", label: TIME_LIMITS.find((t) => t.value === f.time)!.label, remove: () => update({ time: undefined }) }]
-      : []),
     ...(collection ? [{ key: "col", label: collection.title, remove: () => update({ collection: undefined }) }] : []),
   ];
 
   return (
     <div className="gutter mx-auto max-w-[90rem] pt-6 md:pt-10">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
-        <h1 className="text-display-l">{collection ? collection.title : "Dishes"}</h1>
+        <h1 className="text-display-l">{collection ? collection.title : "Menu"}</h1>
         <p className="text-sm text-muted">
           {collection ? collection.blurb : `${dishes.length} dishes from five cuisines`}
         </p>
       </div>
+      <KitchenLine className="mt-2" />
 
       {/* Search + filters bar: sticky under the header on phones. */}
       <div
@@ -328,7 +319,7 @@ function MenuPage() {
                 </button>
               ) : null}
             </div>
-            <FilterPanel f={f} update={update} orderable={orderable} servedLabel={servedLabel} />
+            <FilterPanel f={f} update={update} orderable={orderable} kitchen={kitchen} />
           </div>
         </aside>
 
@@ -344,11 +335,13 @@ function MenuPage() {
               </label>
               <select
                 id={sortId}
-                value={f.sort}
+                value={f.sort === "price" && !price ? "menu" : f.sort}
                 onChange={(e) => update({ sort: e.target.value === "menu" ? undefined : (e.target.value as SortKey) })}
                 className="h-10 rounded-full bg-surface pr-8 pl-4 text-sm font-semibold shadow-[inset_0_0_0_1px_var(--color-control)] focus-visible:outline-2 focus-visible:outline-ring"
               >
-                {(Object.keys(SORT_LABELS) as SortKey[]).map((s) => (
+                {(Object.keys(SORT_LABELS) as SortKey[])
+                  .filter((s) => s !== "price" || price)
+                  .map((s) => (
                   <option key={s} value={s}>
                     {SORT_LABELS[s]}
                   </option>
@@ -433,7 +426,7 @@ function MenuPage() {
           </div>
         }
       >
-        <FilterPanel f={f} update={update} orderable={orderable} servedLabel={servedLabel} />
+        <FilterPanel f={f} update={update} orderable={orderable} kitchen={kitchen} />
       </Sheet>
     </div>
   );

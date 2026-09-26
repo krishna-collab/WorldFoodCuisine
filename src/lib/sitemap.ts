@@ -2,17 +2,16 @@ import { cuisines, dishes } from "./food/data.ts";
 import { SITE_URL } from "./site.ts";
 
 /**
- * Pages worth indexing. Checkout, order, saved and shopping-list pages are
- * personal or transactional and left out on purpose.
+ * Pages worth indexing. Checkout, order and saved pages are personal or
+ * transactional and left out on purpose.
  */
-export const STATIC_PATHS = ["/", "/menu", "/cook", "/ingredients", "/delivery"] as const;
+export const STATIC_PATHS = ["/", "/menu", "/ingredients", "/delivery"] as const;
 
 export function sitemapPaths(): string[] {
   return [
     ...STATIC_PATHS,
     ...cuisines.map((c) => `/menu/${c.id}`),
     ...dishes.map((d) => `/dish/${d.id}`),
-    ...dishes.filter((d) => d.hasRecipe).map((d) => `/dish/${d.id}/cook`),
   ];
 }
 

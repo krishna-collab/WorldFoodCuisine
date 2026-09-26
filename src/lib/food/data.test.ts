@@ -174,13 +174,12 @@ test("AI images are named, sourced and noted as AI images", () => {
   }
 });
 
-test("every dish has editorial copy: a short flavor line, flavor tags and a sensible time", () => {
+test("every dish has editorial copy: a short flavor line and flavor tags", () => {
   for (const d of dishes) {
     assert.ok(editorial[d.id], `${d.id} has an editorial entry`);
     assert.ok(d.flavor.length > 20 && d.flavor.length <= 80, `${d.id} flavor line is ${d.flavor.length} chars`);
     assert.ok(!d.flavor.endsWith("."), `${d.id}: no full stop on the flavor line (pages add it)`);
     assert.ok(d.tastes.length >= 1 && d.tastes.length <= 3, `${d.id} has 1 to 3 flavor tags`);
-    assert.ok(d.time.active > 0 && d.time.active <= d.time.total, `${d.id} time`);
     assert.ok(d.content.ingredients.source && d.content.allergens.source, `${d.id} content sources`);
   }
   assert.equal(Object.keys(editorial).length, dishes.length, "no editorial entries for missing dishes");
@@ -195,8 +194,7 @@ test("menu filters: unknown values are dropped, groups combine, counts add up", 
     taste: "smoky",
     diet: undefined,
     heat: undefined,
-    time: undefined,
-    ways: undefined,
+    available: undefined,
     collection: undefined,
     sort: undefined,
   });
@@ -212,15 +210,20 @@ test("menu filters: unknown values are dropped, groups combine, counts add up", 
     assert.ok(dish.diet.includes("vegetarian") && dish.diet.includes("gluten-free"), dish.id);
   }
   for (const { dish } of filterDishes(parseFilters({ heat: 0 }), nobody)) assert.equal(dish.spice, 0, dish.id);
-  for (const { dish } of filterDishes(parseFilters({ time: 30 }), nobody)) {
-    assert.ok(dish.time.total <= 30, dish.id);
+  // "On today's menu" depends on the visitor's kitchen.
+  assert.equal(validateMenuSearch({ available: 1 }).available, true);
+  assert.equal(validateMenuSearch({ available: "no" }).available, undefined);
+  assert.equal(filterDishes(parseFilters({ available: true }), nobody).length, 0, "no kitchen, nothing on");
+  assert.equal(filterDishes(parseFilters({ available: true }), everyone).length, dishes.length);
+  // Lowest price first uses the kitchen's prices; without a kitchen it keeps menu order.
+  const byPrice = filterDishes(parseFilters({ sort: "price" }), { ...everyone, price: (d) => d.price });
+  for (let i = 1; i < byPrice.length; i++) {
+    assert.ok(byPrice[i - 1]!.dish.price <= byPrice[i]!.dish.price, "sorted by price");
   }
   assert.deepEqual(
-    filterDishes(parseFilters({ ways: "recipe" }), nobody).map((r) => r.dish.id),
-    dishes.filter((d) => d.hasRecipe).map((d) => d.id),
+    filterDishes(parseFilters({ sort: "price" }), nobody).map((r) => r.dish.id),
+    dishes.map((d) => d.id),
   );
-  assert.equal(filterDishes(parseFilters({ ways: "order" }), nobody).length, 0, "nothing orderable, nothing shown");
-  assert.equal(filterDishes(parseFilters({ ways: "order" }), everyone).length, dishes.length);
 
   // A chip's count ignores its own group: picking India still shows Nepal's 10.
   const india = parseFilters({ cuisine: "india" });

@@ -5,8 +5,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * Buttons. Pill-shaped and at least 40px tall (44px from `md`) so they are
- * easy to hit with a thumb. `herb` starts the "Cook it" path and `clay` the
- * "Get it cooked" path; everything else is ink on paper.
+ * easy to hit with a thumb. `clay` is the ordering action (find your kitchen,
+ * add to bag, checkout); `herb` marks confirmations; everything else is ink on
+ * paper.
  */
 export const buttonVariants = cva(
   "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap transition-[opacity,transform,background-color,color,box-shadow] duration-150 ease-out disabled:pointer-events-none disabled:opacity-45 active:not-disabled:scale-[0.97] [&_svg]:shrink-0",

@@ -1,6 +1,6 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChevronDown, Heart, ListChecks, MapPin, Menu, Search, ShoppingBag } from "lucide-react";
+import { ChevronDown, Heart, MapPin, Menu, Search, ShoppingBag } from "lucide-react";
 import { useEffect } from "react";
 import { Wordmark } from "@/components/brand/logo";
 import { InstallButton } from "@/components/pwa/install";
@@ -14,9 +14,8 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/menu", label: "Dishes" },
-  { to: "/cook", label: "Cook at home" },
-  { to: "/delivery", label: "Get it cooked" },
+  { to: "/menu", label: "Menu" },
+  { to: "/delivery", label: "Locations" },
 ] as const;
 
 function useActive() {
@@ -103,7 +102,7 @@ function IconLink({
   children,
   className,
 }: {
-  to: "/saved" | "/list";
+  to: "/saved";
   label: string;
   count?: number;
   children: React.ReactNode;
@@ -161,7 +160,7 @@ export function SiteHeader() {
               pathname === "/menu" ? "text-fg" : "text-muted hover:text-fg",
             )}
           >
-            Dishes
+            Menu
           </Link>
           <CuisinesMenu active={pathname.startsWith("/menu/")} />
           {NAV.slice(1).map((item) => (
@@ -229,9 +228,8 @@ export function SiteHeader() {
       <Sheet open={navOpen} onOpenChange={setNavOpen} title="Menu">
         <nav aria-label="Main" className="flex flex-col">
           {[
-            { to: "/menu", label: "All dishes" },
-            { to: "/cook", label: "Cook at home" },
-            { to: "/delivery", label: "Get it cooked" },
+            { to: "/menu", label: "Menu" },
+            { to: "/delivery", label: "Locations" },
             { to: "/ingredients", label: "What’s in our food" },
           ].map((item) => (
             <Link
@@ -266,12 +264,6 @@ export function SiteHeader() {
           >
             <Heart className="size-4" aria-hidden="true" /> Saved dishes
             {saved ? <span className="nums text-sm text-subtle">{saved}</span> : null}
-          </Link>
-          <Link
-            to="/list"
-            className="flex h-11 items-center gap-3 rounded-xl px-3 font-semibold hover:bg-sunken"
-          >
-            <ListChecks className="size-4" aria-hidden="true" /> Shopping list
           </Link>
           <div className="mt-6 flex flex-wrap items-center gap-2 px-3">
             <LocationChip />

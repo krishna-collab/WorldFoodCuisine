@@ -39,7 +39,7 @@ export function StatusLine() {
       <p className="gutter mx-auto flex min-h-8 max-w-[90rem] items-center justify-center py-1 text-center text-[0.8125rem] leading-snug text-muted">
         <span>
           <strong className="font-bold text-fg">Not delivering yet.</strong>{" "}
-          <span className="hidden sm:inline">Browse every dish and cook at home, or </span>
+          <span className="hidden sm:inline">No kitchen is open yet. Browse the menu, or </span>
           <Link to="/delivery" className="font-semibold text-fg underline underline-offset-2">
             <span className="sm:hidden">Try the ordering demo</span>
             <span className="hidden sm:inline">try the ordering demo</span>

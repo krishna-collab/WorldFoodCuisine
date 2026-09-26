@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Save a dish for later. Saved dishes live on this device and stay
- * available offline (their page, recipe and image are kept).
+ * available offline (their page and image are kept).
  */
 export function SaveButton({
   dish,

@@ -23,6 +23,7 @@ export function LocationDialog() {
   const postalCode = useDeliveryArea((s) => s.postalCode);
   const demo = useDeliveryArea((s) => s.demo);
   const setPostalCode = useDeliveryArea((s) => s.setPostalCode);
+  const setDemo = useDeliveryArea((s) => s.setDemo);
   const ref = useRef<HTMLDialogElement>(null);
   const inputId = useId();
   const errorId = useId();
@@ -69,7 +70,7 @@ export function LocationDialog() {
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
           <h2 id={`${inputId}-title`} className="text-display-s">
-            Get it cooked near you
+            Find your kitchen
           </h2>
           <button
             type="button"
@@ -82,9 +83,15 @@ export function LocationDialog() {
         </div>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {ORDERING_LIVE
-            ? "Enter your ZIP code to see what we can deliver, with prices, fees and delivery times for your area."
-            : "We’re not delivering anywhere yet. Enter your ZIP code and we’ll tell you honestly whether we reach you."}
+            ? "Each WorldFoodCuisine kitchen delivers to its own area, with its own menu for the day. Enter your ZIP code to find yours."
+            : "No WorldFoodCuisine kitchen is open yet. Enter your ZIP code and we’ll tell you honestly whether one delivers to you."}
         </p>
+        {demo ? (
+          <p className="mt-2 rounded-lg bg-warn-bg px-3 py-2 text-sm leading-relaxed text-warn-fg">
+            Demo mode: ZIP codes starting with 8 or 9 go to Demo kitchen West, all others to Demo
+            kitchen East. Their menus, prices, hours and fees differ.
+          </p>
+        ) : null}
 
         <form onSubmit={onSubmit} className="mt-5" noValidate>
           <Label htmlFor={inputId}>ZIP code</Label>
@@ -116,13 +123,11 @@ export function LocationDialog() {
             <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="flex items-center gap-2 font-medium text-fg">
                 <MapPin className="size-4 text-accent" aria-hidden="true" />
-                {result.zone.demo ? "Demo delivery to " : "We deliver to "}
-                {result.postalCode}
+                {result.zone.label} delivers to {result.postalCode}
               </p>
               <ul className="mt-2 space-y-1 text-muted">
                 <li>
-                  {result.zone.label} · about {result.zone.etaMinutes[0]}–
-                  {result.zone.etaMinutes[1]} min
+                  Delivery only · about {result.zone.etaMinutes[0]}–{result.zone.etaMinutes[1]} min
                 </li>
                 <li>
                   Delivery {formatPrice(result.zone.deliveryFee)}
@@ -147,7 +152,7 @@ export function LocationDialog() {
               ) : (
                 <Button asChild className="mt-4 w-full">
                   <Link to="/menu" onClick={closeDialog}>
-                    Browse dishes
+                    See the menu
                   </Link>
                 </Button>
               )}
@@ -157,19 +162,32 @@ export function LocationDialog() {
           {result?.kind === "unserved" ? (
             <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="font-medium text-fg">
-                We’re not delivering to {result.postalCode} yet.
+                No kitchen delivers to {result.postalCode} yet.
               </p>
               <p className="mt-1 text-muted">
                 {ORDERING_LIVE
-                  ? "Your area isn’t covered yet."
-                  : "No kitchen is open yet, so we can’t deliver anywhere yet."}{" "}
-                You can still browse every dish and see exactly what’s in it.
+                  ? "Your area isn’t covered by a kitchen yet."
+                  : "No kitchen is open yet, so nothing can be delivered."}{" "}
+                You can still browse every dish and see exactly what’s in it, or try ordering in
+                demo mode.
               </p>
-              <Button asChild variant="secondary" className="mt-4 w-full">
-                <Link to="/menu" onClick={closeDialog}>
-                  Browse dishes
-                </Link>
-              </Button>
+              <div className="mt-4 grid gap-2">
+                <Button
+                  variant="warn"
+                  className="w-full"
+                  onClick={() => {
+                    setDemo(true);
+                    setChecked(result.postalCode);
+                  }}
+                >
+                  Try it in demo mode
+                </Button>
+                <Button asChild variant="secondary" className="w-full">
+                  <Link to="/menu" onClick={closeDialog}>
+                    Browse the menu
+                  </Link>
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>

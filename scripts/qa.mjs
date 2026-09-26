@@ -6,12 +6,13 @@
  *   npm run qa                           # in a second terminal
  *
  * Sections (QA_ONLY picks some, e.g. QA_ONLY=flows,a11y):
- *   flows    Discovery → dish → guided cook (search, filters, servings, units,
- *            swaps, timers, shopping list, leave and resume), and the demo order
- *            (ZIP, options, bag, checkout details, review, place, confirmation),
- *            at 390px and 1440px.
- *   offline  A dish saved from the menu opens, and its recipe works, with the
- *            network off; the bag survives; checkout won't place an order.
+ *   flows    Browsing (search in local scripts and without accents, filters,
+ *            dish pages that ask for a ZIP before showing prices) and the demo
+ *            order across two kitchens (ZIP check, options, bag, switching to a
+ *            kitchen with other prices and a sold-out dish, checkout details,
+ *            review, place, confirmation), at 390px and 1440px.
+ *   offline  A dish saved from the menu opens and works with the network off;
+ *            the bag survives; checkout won't place an order.
  *   a11y     axe-core WCAG 2.0/2.1/2.2 A and AA rules on every page, overlay and
  *            checkout stage at 390, 768, 1024, 1280, 1440 and 1920px, in light
  *            and dark; sideways-scroll checks; keyboard focus checks.
@@ -181,10 +182,10 @@ async function seedDemo(context) {
   });
 }
 
-/* ─── Flow 1: discovery → dish → guided cook ──────────────────────────── */
+/* ─── Flow 1: browse the menu ─────────────────────────────────────────── */
 
-async function cookFlow(label, options) {
-  const S = `cook flow ${label}`;
+async function browseFlow(label, options) {
+  const S = `browse ${label}`;
   const context = await browser.newContext({ ...options, serviceWorkers: "block" });
   const page = await context.newPage();
   const errors = watchErrors(page);
@@ -202,6 +203,8 @@ async function cookFlow(label, options) {
     expect(img, "no dish image on the home page");
     expect(img.loaded, "the first dish image didn't load");
     expect(img.top < options.viewport.height / 2, `first dish image starts at ${Math.round(img.top)}px`);
+    await page.getByRole("heading", { level: 1, name: /cooked to order and delivered/ }).waitFor();
+    await page.getByRole("button", { name: "Find your kitchen" }).first().waitFor();
     return `first dish image ${Math.round(img.top)}px from the top`;
   });
 
@@ -225,7 +228,7 @@ async function cookFlow(label, options) {
     return `4 name searches found their dish; “timur” → ${heading}`;
   });
 
-  await check(S, "filters: cuisine + diet + time, counts, pills, URL", page, async () => {
+  await check(S, "filters: cuisine + diet, counts, pills, URL; kitchen filter asks for a ZIP", page, async () => {
     await go(page, "/menu");
     let scope = page.getByRole("complementary", { name: "Filters" });
     if (phone) {
@@ -233,10 +236,10 @@ async function cookFlow(label, options) {
       scope = page.getByRole("dialog", { name: "Filters" });
       await scope.waitFor();
     }
+    await scope.getByRole("button", { name: "Check your ZIP" }).waitFor();
     await scope.getByRole("button", { name: /^Nepal\b/ }).click();
     await scope.getByRole("button", { name: /^Vegetarian\b/ }).click();
-    await scope.getByRole("button", { name: /^2 hours or less\b/ }).click();
-    await until(page, () => new URL(location.href).searchParams.get("time") === "120");
+    await until(page, () => new URL(location.href).searchParams.get("diet") === "vegetarian");
     let shown = null;
     if (phone) {
       const show = scope.getByRole("button", { name: /^Show \d+ dish/ });
@@ -246,12 +249,9 @@ async function cookFlow(label, options) {
       const focused = await page.evaluate(() => document.activeElement?.getAttribute("aria-label"));
       expect(/^Filters/.test(focused ?? ""), `focus went to “${focused}” after closing the sheet`);
     }
-    const url = new URL(page.url());
-    expect(
-      url.searchParams.get("cuisine") === "nepal" && url.searchParams.get("diet") === "vegetarian",
-      `URL is ${url.search}`,
-    );
+    expect(new URL(page.url()).searchParams.get("cuisine") === "nepal", `URL is ${page.url()}`);
     const cards = page.locator('section[aria-labelledby="results-heading"] article');
+    await until(page, (n) => document.querySelectorAll('section[aria-labelledby="results-heading"] article').length === n || n === null, shown);
     const n = await cards.count();
     expect(n > 0, "no dishes left");
     if (shown !== null) expect(shown === n, `sheet said ${shown}, page shows ${n}`);
@@ -263,120 +263,21 @@ async function cookFlow(label, options) {
     await until(page, () => !new URL(location.href).searchParams.get("cuisine"));
     await pills.getByRole("button", { name: "Clear all" }).click();
     await until(page, () => !new URL(location.href).searchParams.get("diet"));
-    return `${n} Nepali vegetarian dishes under 2 hours; pills and Clear all work`;
+    return `${n} Nepali vegetarian dishes; pills and Clear all work`;
   });
 
-  await check(S, "dish page: Cook it / Get it cooked share one dish", page, async () => {
+  await check(S, "dish page: ordering asks for a ZIP before any price", page, async () => {
     await go(page, "/menu/nepal");
     await page.getByRole("link", { name: "Chicken Momo", exact: true }).first().click();
     await page.waitForURL(/\/dish\/chicken-momo$/);
     await page.getByRole("heading", { level: 1, name: "Chicken Momo" }).waitFor();
-    const cook = page.getByRole("tab", { name: /Cook it/ });
-    const order = page.getByRole("tab", { name: /Get it cooked/ });
-    expect((await cook.getAttribute("aria-selected")) === "true", "Cook it isn't the default");
-    await order.click();
-    await page.waitForURL(/path=order/);
-    await page.getByText(/Not on sale yet|Is it delivered near you/).waitFor();
-    expect(
-      (await page.getByText(/\$\d/).count()) === 0 || (await page.getByText("demo price").count()) > 0,
-      "a price shows with no kitchen and no demo",
-    );
-    await cook.click();
-    await page.waitForURL(/path=cook/);
+    const order = page.getByRole("region", { name: "Order Chicken Momo" });
+    await order.getByText("No kitchen is open yet").waitFor();
+    expect((await order.getByText(/\$\d/).count()) === 0, "a price shows with no kitchen");
+    expect((await page.getByText(/Cook it|guided recipe|Start cooking/i).count()) === 0, "cooking UI is still on the page");
     const allergens = await textOf(page.locator('section[aria-labelledby="whats-in-it"]'));
     expect(/draft|not yet/i.test(allergens), "allergen status isn't shown");
-    return "Cook it is the default; Get it cooked asks for a ZIP and shows no price";
-  });
-
-  await check(S, "cook mode: servings, units, swap with allergen warning", page, async () => {
-    await page.getByRole("link", { name: "Start cooking" }).first().click();
-    await page.waitForURL(/\/dish\/chicken-momo\/cook$/);
-    await page.getByText("Get ready").first().waitFor();
-    const flour = page.locator("li", { hasText: "Maida" }).first();
-    const before = await textOf(flour);
-    await page.getByRole("button", { name: "More servings" }).click();
-    await page.getByRole("button", { name: "More servings" }).click();
-    await page.getByText("Makes about 45 momos").waitFor();
-    const after = await textOf(flour);
-    expect(before !== after, `flour didn't scale: ${before}`);
-    await page.getByText("Metric", { exact: true }).click();
-    await until(page, () => /\d+\s?g\b/.test(document.body.innerText));
-    const metric = await textOf(flour);
-    expect(/\bg\b/.test(metric), `metric flour reads “${metric}”`);
-    await page.getByRole("button", { name: /^Swap sesame/i }).click();
-    // Choosing a swap closes the list of swaps, so click rather than check.
-    await page.getByRole("radio", { name: /pepitas/i }).click();
-    const box = page.getByRole("region", { name: "Allergens" });
-    await until(page, () => /Your swaps remove sesame/i.test(document.body.innerText));
-    const contains = await textOf(box);
-    expect(!/Sesame/.test(contains.split(".")[0]), `still lists sesame: ${contains}`);
-    await page.locator('input[type="checkbox"]').first().check();
-    await page.getByText(/1 of \d+ set out/).waitFor();
-    return `flour ${before.split(" ").slice(0, 2).join(" ")} → ${after.split(" ").slice(0, 2).join(" ")} → ${metric.split(" ").slice(0, 2).join(" ")}; sesame swapped out`;
-  });
-
-  await check(S, "shopping list from the recipe, grouped by aisle", page, async () => {
-    await page.getByRole("button", { name: "Add to shopping list" }).click();
-    await page.getByText(/ingredients on your shopping list/).waitFor();
-    return "added";
-  });
-
-  let stepAtLeave = 0;
-  await check(S, "steps: keyboard, focus, a timer", page, async () => {
-    await page.getByRole("button", { name: "Start cooking" }).click();
-    await page.getByText(/Step 1 of \d+/).first().waitFor();
-    const onHeading = () => document.activeElement?.hasAttribute("data-step-heading");
-    await until(page, onHeading).catch(() => {
-      throw new Error("focus didn't move to the step heading");
-    });
-    await page.keyboard.press("ArrowRight");
-    await page.getByText(/Step 2 of \d+/).first().waitFor();
-    await until(page, onHeading);
-    for (let i = 0; i < 14; i++) {
-      if (await page.getByRole("button", { name: "Start timer" }).isVisible()) break;
-      await page.getByRole("button", { name: /^Next:/ }).click();
-    }
-    await page.getByRole("button", { name: "Start timer" }).click();
-    const clock = page.locator("section[aria-label$='timer'] p.nums");
-    const t1 = await clock.innerText();
-    await page.waitForTimeout(2200);
-    const t2 = await clock.innerText();
-    expect(t1 !== t2, `timer didn't move (${t1})`);
-    await page.getByRole("button", { name: /^Timers: 1/ }).waitFor();
-    stepAtLeave = Number((await page.getByText(/Step \d+ of \d+/).first().innerText()).match(/Step (\d+)/)[1]);
-    return `timer counting down on step ${stepAtLeave} (${t1} → ${t2})`;
-  });
-
-  await check(S, "leave and resume: same step, timer still running", page, async () => {
-    await page.getByRole("link", { name: /Leave cook mode/ }).click();
-    await page.waitForURL(/\/dish\/chicken-momo/);
-    await page.getByRole("link", { name: new RegExp(`Resume at step ${stepAtLeave} of`) }).waitFor();
-    await go(page, "/");
-    await go(page, "/dish/chicken-momo/cook");
-    await page.getByText(new RegExp(`Step ${stepAtLeave} of \\d+`)).first().waitFor();
-    await page.getByText(new RegExp(`Picked up where you left off: step ${stepAtLeave}`)).waitFor();
-    await page.getByRole("button", { name: /^Timers: 1/ }).waitFor();
-    await page.reload({ waitUntil: "networkidle" });
-    await page.getByText(new RegExp(`Step ${stepAtLeave} of \\d+`)).first().waitFor();
-    return `back on step ${stepAtLeave} after leaving, navigating and reloading`;
-  });
-
-  await check(S, "shopping list page: swaps, aisles, tick and clear", page, async () => {
-    await go(page, "/list");
-    await page.getByRole("heading", { level: 1, name: "Shopping list" }).waitFor();
-    const lines = (await page.locator("main li label").allInnerTexts()).map(squash);
-    const names = lines.map((l) => l.split("instead of")[0]);
-    expect(names.some((n) => /pepitas/i.test(n)), "the swapped pepitas are missing");
-    expect(lines.some((l) => /instead of sesame/i.test(l)), "the swap isn't explained");
-    expect(!names.some((n) => /sesame/i.test(n)), "sesame is still on the list");
-    const aisles = await page.locator("main h2").count();
-    expect(aisles >= 3, `only ${aisles} aisles`);
-    const boxes = page.locator('main input[type="checkbox"]');
-    const n = await boxes.count();
-    await boxes.first().check();
-    await page.getByRole("button", { name: "Clear ticked" }).click();
-    await until(page, (want) => document.querySelectorAll('main input[type="checkbox"]').length === want, n - 1);
-    return `${n} items in ${aisles} aisles; ticking and clearing works`;
+    return "no price until a kitchen serves the ZIP; no cooking UI";
   });
 
   await check(S, "no console errors", page, async () => {
@@ -385,35 +286,39 @@ async function cookFlow(label, options) {
   await context.close();
 }
 
-/* ─── Flow 2: demo order ──────────────────────────────────────────────── */
+/* ─── Flow 2: demo order across two kitchens ─────────────────────────── */
+
+async function setZip(page, zip) {
+  const dialog = page.getByRole("dialog", { name: "Find your kitchen" });
+  await dialog.waitFor();
+  await dialog.getByLabel("ZIP code").fill(zip);
+  await dialog.getByRole("button", { name: "Check" }).click();
+  return dialog;
+}
 
 async function orderFlow(label, options) {
-  const S = `order flow ${label}`;
+  const S = `order ${label}`;
   const context = await browser.newContext({ ...options, serviceWorkers: "block" });
   const page = await context.newPage();
   const errors = watchErrors(page);
 
-  await check(S, "ZIP check: validation, demo zone, honest labels", page, async () => {
-    await go(page, "/dish/chicken-momo?path=order");
-    await page.getByText("Not on sale yet").waitFor();
+  await check(S, "ZIP check: validation, demo kitchen, honest labels", page, async () => {
+    await go(page, "/dish/chicken-momo");
     await page.getByRole("button", { name: "Try ordering in demo mode" }).click();
-    const dialog = page.getByRole("dialog", { name: "Get it cooked near you" });
-    await dialog.waitFor();
-    await dialog.getByLabel("ZIP code").fill("951");
-    await dialog.getByRole("button", { name: "Check" }).click();
+    const dialog = await setZip(page, "951");
     await dialog.getByText("Enter a 5-digit US ZIP code").waitFor();
-    await dialog.getByLabel("ZIP code").fill("95112");
-    await dialog.getByRole("button", { name: "Check" }).click();
-    await dialog.getByText("Demo delivery to 95112").waitFor();
+    await setZip(page, "95112");
+    await dialog.getByText("Demo kitchen West delivers to 95112").waitFor();
     await dialog.getByText(/Demo mode: these are example numbers/).waitFor();
     await dialog.getByRole("button", { name: "Continue" }).click();
     await dialog.waitFor({ state: "hidden" });
     await page.getByText("demo price").first().waitFor();
+    await page.getByText(/From\s*Demo kitchen West\s*to 95112/).waitFor();
     await page.getByText(/Demo mode:\s*nothing is sent or charged/).first().waitFor();
-    return "bad ZIP rejected; 95112 in demo mode; prices say demo";
+    return "bad ZIP rejected; 95112 → Demo kitchen West; prices say demo";
   });
 
-  await check(S, "options, quantity and add to bag", page, async () => {
+  await check(S, "options, quantity and add to bag (no pop-up bag)", page, async () => {
     await page.getByText("Milder", { exact: true }).click();
     await page.getByRole("button", { name: /More portions/ }).click();
     const add = page.getByRole("button", { name: /^Add to bag/ });
@@ -423,26 +328,40 @@ async function orderFlow(label, options) {
     await page.getByRole("button", { name: "View bag" }).waitFor();
     await page.getByRole("button", { name: "Bag, 2 items" }).waitFor();
     expect((await page.getByRole("dialog").count()) === 0, "the bag popped open on add");
-    return `${label}; toast offers View bag`;
+    await go(page, "/dish/mole-poblano");
+    await page.getByRole("button", { name: /^Add to bag/ }).click();
+    await page.getByRole("button", { name: "Bag, 3 items" }).waitFor();
+    return `${label}; then Mole Poblano`;
   });
 
-  await check(S, "a dish the kitchen isn't making can't be added", page, async () => {
-    await go(page, "/dish/osso-buco?path=order");
-    await page.getByText("Not on today's menu").or(page.getByText("Not on today’s menu")).first().waitFor();
+  await check(S, "a dish this kitchen isn't making can't be added", page, async () => {
+    await go(page, "/dish/osso-buco");
+    await page.getByText("Sold out today").first().waitFor();
     expect((await page.getByRole("button", { name: /^Add to bag/ }).count()) === 0, "Osso Buco can still be added");
-    return "Osso Buco shows why it's unavailable, with no Add button";
+    return "Osso Buco is sold out at Demo kitchen West, with no Add button";
   });
 
-  await check(S, "bag: options, allergens, subtotal, checkout", page, async () => {
-    await page.getByRole("button", { name: "Bag, 2 items" }).click();
-    const bag = page.getByRole("dialog");
+  await check(S, "switching kitchens: new prices, a sold-out dish blocks checkout", page, async () => {
+    await go(page, "/dish/chicken-momo");
+    await page.getByRole("button", { name: "Change ZIP code" }).click();
+    const dialog = await setZip(page, "10001");
+    await dialog.getByText("Demo kitchen East delivers to 10001").waitFor();
+    await dialog.getByRole("button", { name: "Continue" }).click();
+    await page.getByText(/From\s*Demo kitchen East\s*to 10001/).waitFor();
+    await page.getByText("$13.50").first().waitFor();
+    await page.getByRole("button", { name: "Bag, 3 items" }).click();
+    const bag = page.getByRole("dialog", { name: "Your bag" });
     await bag.waitFor();
+    await bag.getByText("Sold out today").waitFor();
+    await bag.getByText(/isn’t making one dish in your bag today/).waitFor();
+    expect((await bag.getByRole("link", { name: /^Checkout/ }).count()) === 0, "checkout offered with a sold-out dish");
     const body = await textOf(bag);
     expect(/Heat: Milder/.test(body), "the chosen option isn't shown");
-    expect(/Contains|allergen/i.test(body), "no allergen line in the bag");
+    expect(/Demo kitchen East/.test(body), "the bag doesn't name the kitchen");
+    await bag.getByRole("button", { name: "Remove Mole Poblano" }).click();
     await bag.getByRole("link", { name: /^Checkout/ }).click();
     await page.waitForURL(/\/checkout/);
-    return "Heat: Milder and allergens shown; checkout opens";
+    return "East prices Chicken Momo at $13.50; sold-out Mole blocks checkout until removed";
   });
 
   let total = 0;
@@ -461,9 +380,9 @@ async function orderFlow(label, options) {
     const focusedId = await page.evaluate(() => document.activeElement?.id);
     expect(Boolean(focusedId) && (await page.getByLabel("Street address").getAttribute("id")) === focusedId, "the error link didn't focus its field");
     await page.getByLabel("Street address").fill("1 Test Street");
-    await page.getByLabel("City").fill("San Jose");
+    await page.getByLabel("City").fill("New York");
     await page.getByLabel("Name", { exact: true }).fill("Sam Test");
-    await page.getByLabel("Phone").fill("(408) 555-0100");
+    await page.getByLabel("Phone").fill("(212) 555-0100");
     await page.getByText(/^15% ·/).click();
     await page.getByRole("button", { name: "Review order" }).click();
     await page.getByRole("button", { name: /^Place demo order/ }).waitFor();
@@ -486,6 +405,7 @@ async function orderFlow(label, options) {
     const tax = get(/^Tax/);
     const tip = get(/^Tip/);
     total = get(/^(Demo )?total$/i);
+    expect(Math.abs(subtotal - 27) < 0.011, `subtotal is ${subtotal}, expected 2 × $13.50 at East`);
     expect(Math.abs(subtotal + delivery + tax + tip - total) < 0.011, `${subtotal} + ${delivery} + ${tax} + ${tip} ≠ ${total}`);
     const button = dollars((await page.getByRole("button", { name: /^Place demo order/ }).innerText()).split("·")[1]);
     expect(Math.abs(button - total) < 0.011, `button says ${button}, total is ${total}`);
@@ -499,11 +419,12 @@ async function orderFlow(label, options) {
     return `$${subtotal.toFixed(2)} + $${delivery.toFixed(2)} delivery + $${tax.toFixed(2)} tax + $${tip.toFixed(2)} tip = $${total.toFixed(2)}`;
   });
 
-  await check(S, "place: confirmation says demo, bag empties", page, async () => {
+  await check(S, "place: confirmation names the kitchen, says demo, bag empties", page, async () => {
     await page.getByRole("button", { name: /^Place demo order/ }).click();
     await page.waitForURL(/\/order\/DEMO-\d+/);
     await page.getByText("This was a demo. Nothing was sent to a kitchen.").waitFor();
     await page.getByText(/No card was charged/).waitFor();
+    await page.getByText("Demo kitchen East").first().waitFor();
     await page.getByRole("button", { name: "Bag, empty" }).waitFor();
     return new URL(page.url()).pathname;
   });
@@ -541,17 +462,16 @@ async function offlineFlow() {
     return "registered and controlling the page";
   });
 
-  await check(S, "saving a dish from the menu keeps its page, recipe and scripts", page, async () => {
+  await check(S, "saving a dish from the menu keeps its page, image and scripts", page, async () => {
     await page.getByRole("button", { name: "Save Chicken Momo" }).first().click();
     await poll(
       page,
       async () => {
         const keys = (await (await caches.open("wfc-saved")).keys()).map((r) => new URL(r.url).pathname);
-        // The image is saved last, so once it's there the pages and their scripts are too.
+        // The image is saved last, so once it's there the page and its scripts are too.
         return (
           keys.includes("/dish/chicken-momo") &&
-          keys.includes("/dish/chicken-momo/cook") &&
-          keys.some((k) => k.startsWith("/assets/dish_._id.cook")) &&
+          keys.some((k) => k.startsWith("/assets/dish._id")) &&
           keys.some((k) => k.startsWith("/food/chicken-momo"))
         );
       },
@@ -566,29 +486,26 @@ async function offlineFlow() {
         JSON.stringify({ state: { items: [{ dishId: "chicken-momo", qty: 1 }] }, version: 0 }),
       ),
     );
-    return `${kept} files kept, though cook mode was never opened`;
+    return `${kept} files kept, though the dish page was never opened`;
   });
 
   await goOffline(true);
 
-  await check(S, "saved recipe opens and works with no network", page, async () => {
-    await page.goto(at("/dish/chicken-momo/cook"), { waitUntil: "load" });
-    await page.getByRole("heading", { level: 1, name: "Chicken Momo" }).waitFor();
-    await page.getByRole("button", { name: "More servings" }).click();
-    await page.getByText("5 servings").first().waitFor();
-    await page.getByRole("button", { name: "Start cooking" }).click();
-    await page.getByText(/Step 1 of \d+/).first().waitFor();
-    return "recipe loads, servings change, steps advance";
-  });
-
-  await check(S, "saved dish page opens; the bag is still there; checkout waits", page, async () => {
+  await check(S, "saved dish opens and works with no network; the bag is still there", page, async () => {
     await page.goto(at("/dish/chicken-momo"), { waitUntil: "load" });
     await page.getByRole("heading", { level: 1, name: "Chicken Momo" }).waitFor();
+    const img = await page.evaluate(() => {
+      const el = [...document.images].find((i) => /food|_vercel\/image/.test(i.currentSrc || i.src));
+      return el ? el.complete && el.naturalWidth > 0 : false;
+    });
+    expect(img, "the dish image didn't load offline");
+    await page.getByRole("button", { name: /More portions/ }).click();
+    await page.getByRole("button", { name: /^Add to bag · \$25\.80/ }).waitFor();
     await page.getByRole("button", { name: /^Bag, 1 item/ }).click();
     await page.getByText("You’re offline. Your bag is saved; checkout needs a connection.").waitFor();
     expect((await page.getByRole("link", { name: /^Checkout/ }).count()) === 0, "checkout is still offered offline");
     await page.keyboard.press("Escape");
-    return "bag kept; checkout says it needs a connection";
+    return "page, image and ordering controls work; bag kept; checkout says it needs a connection";
   });
 
   await check(S, "checkout offline shows the offline page, not a form", page, async () => {
@@ -685,14 +602,27 @@ const STATES = [
     await p.getByRole("menu").waitFor();
   }],
   ["cuisine page", (p) => go(p, "/menu/nepal")],
-  ["dish, cook it", (p) => go(p, "/dish/chicken-momo")],
-  ["dish, get it cooked", (p) => go(p, "/dish/chicken-momo?path=order")],
-  ["dish, unavailable", (p) => go(p, "/dish/osso-buco?path=order")],
-  ["dish, no recipe yet", (p) => go(p, "/dish/pad-thai")],
-  ["ZIP dialog", async (p) => {
-    await go(p, "/dish/pad-thai?path=order");
+  ["dish, ordering", (p) => go(p, "/dish/chicken-momo")],
+  ["dish, sold out here", (p) => go(p, "/dish/osso-buco")],
+  ["dish, other kitchen's price", async (p) => {
+    await go(p, "/dish/pad-thai");
     await p.getByRole("button", { name: "Change ZIP code" }).click();
-    await p.getByRole("dialog", { name: "Get it cooked near you" }).waitFor();
+    const dialog = p.getByRole("dialog", { name: "Find your kitchen" });
+    await dialog.getByLabel("ZIP code").fill("10001");
+    await dialog.getByRole("button", { name: "Check" }).click();
+    await dialog.getByText("Demo kitchen East delivers to 10001").waitFor();
+  }],
+  ["ZIP dialog with a result", async (p) => {
+    await p.keyboard.press("Escape");
+    await p.getByRole("button", { name: "Change ZIP code" }).click();
+    const dialog = p.getByRole("dialog", { name: "Find your kitchen" });
+    await dialog.getByLabel("ZIP code").fill("95112");
+    await dialog.getByRole("button", { name: "Check" }).click();
+    await dialog.getByText("Demo kitchen West delivers to 95112").waitFor();
+  }],
+  ["menu, today's menu at your kitchen", async (p) => {
+    await p.keyboard.press("Escape");
+    await go(p, "/menu?available=true&sort=price");
   }],
   ["bag", async (p) => {
     await go(p, "/menu/india");
@@ -700,39 +630,30 @@ const STATES = [
     await p.getByRole("dialog").waitFor();
     await p.waitForTimeout(400);
   }],
-  ["cook, get ready (swap open)", async (p) => {
-    await go(p, "/dish/chicken-momo/cook");
-    await p.getByRole("button", { name: /^Swap ghee/i }).first().click();
-  }],
-  ["cook, step with timer running", async (p) => {
-    await p.getByRole("button", { name: "Add to shopping list" }).click();
-    await p.getByRole("button", { name: "Start cooking" }).click();
-    for (let i = 0; i < 14; i++) {
-      if (await p.getByRole("button", { name: "Start timer" }).isVisible()) break;
-      await p.getByRole("button", { name: /^Next:/ }).click();
-    }
-    await p.getByRole("button", { name: "Start timer" }).click();
-  }],
-  ["cook, timers popover", async (p) => {
-    await p.getByRole("button", { name: /^Timers: / }).click();
-    await p.getByRole("dialog").waitFor();
-  }],
-  ["cook, settings sheet", async (p) => {
+  ["bag with a dish this kitchen isn't making", async (p) => {
     await p.keyboard.press("Escape");
-    await p.getByRole("button", { name: "Cooking settings" }).click();
-    await p.getByRole("dialog", { name: /settings/i }).waitFor();
+    await go(p, "/dish/mole-poblano");
+    await p.getByRole("button", { name: /^Add to bag/ }).click();
+    await p.getByRole("button", { name: "Change ZIP code" }).click();
+    const dialog = p.getByRole("dialog", { name: "Find your kitchen" });
+    await dialog.getByLabel("ZIP code").fill("10001");
+    await dialog.getByRole("button", { name: "Check" }).click();
+    await dialog.getByRole("button", { name: "Continue" }).click();
+    await p.getByRole("button", { name: /^Bag, / }).click();
+    await p.getByRole("dialog", { name: "Your bag" }).getByText("Sold out today").waitFor();
     await p.waitForTimeout(400);
   }],
-  ["cook, finished", async (p) => {
-    await p.keyboard.press("Escape");
-    for (let i = 0; i < 16; i++) {
-      const next = p.getByRole("button", { name: /^(Next:|Finish)/ });
-      if (!(await next.isVisible())) break;
-      await next.click();
-    }
+  ["locations", async (p) => {
+    // Back to the seeded bag and kitchen for the checkout states that follow.
+    await p.evaluate(() => {
+      localStorage.setItem("wfc-delivery-area", JSON.stringify({ state: { postalCode: "95112", demo: true }, version: 0 }));
+      localStorage.setItem(
+        "wfc-cart",
+        JSON.stringify({ state: { items: [{ dishId: "chicken-momo", qty: 2 }, { dishId: "palak-paneer", qty: 1 }] }, version: 0 }),
+      );
+    });
+    await go(p, "/delivery");
   }],
-  ["cook hub", (p) => go(p, "/cook")],
-  ["shopping list", (p) => go(p, "/list")],
   ["saved", (p) => go(p, "/saved")],
   ["checkout, errors", async (p) => {
     await go(p, "/checkout");
@@ -749,7 +670,6 @@ const STATES = [
     await p.waitForURL(/\/order\//);
     await p.getByText(/This was a demo/).waitFor();
   }],
-  ["delivery", (p) => go(p, "/delivery")],
   ["ingredients", (p) => go(p, "/ingredients")],
   ["not found", (p) => go(p, "/no-such-page")],
 ];
@@ -891,8 +811,8 @@ const started = Date.now();
 const report = { base: BASE, date: new Date().toISOString() };
 
 if (ONLY.has("flows")) {
-  await cookFlow("390px", PHONE);
-  await cookFlow("1440px", DESKTOP);
+  await browseFlow("390px", PHONE);
+  await browseFlow("1440px", DESKTOP);
   await orderFlow("390px", PHONE);
   await orderFlow("1440px", DESKTOP);
 }
@@ -925,7 +845,7 @@ if (ONLY.has("a11y")) {
     ["390px", PHONE],
     ["1440px", DESKTOP],
   ]) {
-    for (const path of ["/", "/menu", "/dish/chicken-momo", "/dish/chicken-momo/cook", "/checkout"]) {
+    for (const path of ["/", "/menu", "/dish/chicken-momo", "/delivery", "/checkout"]) {
       await focusRun(label, options, path);
     }
   }
@@ -940,13 +860,10 @@ if (ONLY.has("perf")) {
     }],
     ["/menu/nepal", null],
     ["/dish/chicken-momo", async (p) => {
-      await p.getByRole("tab", { name: /Get it cooked/ }).click();
-      return "tap Get it cooked";
+      await p.getByRole("button", { name: /More portions/ }).click();
+      return "tap More portions";
     }],
-    ["/dish/chicken-momo/cook", async (p) => {
-      await p.getByRole("button", { name: "More servings" }).click();
-      return "tap More servings";
-    }],
+    ["/delivery", null],
   ];
   report.perf = [];
   for (const [path, interact] of pages) {

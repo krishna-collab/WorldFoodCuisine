@@ -3,42 +3,28 @@
 > **How to use:** keep this file in the repo root. Fill in §0.3 ("What only you can answer"), then tell your coding agent:
 > *"Read REDESIGN.md and start Phase 0."* In later sessions: *"Continue with the next phase in REDESIGN.md."*
 
-## Status (25 Sep 2026): Cook it, or get it cooked
+## Status (26 Sep 2026): delivery-only ordering
 
-A second pass turned the site into one product with two paths per dish. What
-changed, and the decisions behind it:
+The owner's direction: WorldFoodCuisine is an app for ordering food from its
+franchise kitchens in different locations. The kitchens only cook and
+deliver; there is no dine-in. So the "Cook it" path, the guided recipe, cook
+mode, timers and the shopping list from the 25 Sep pass are gone, and the site
+is about finding your kitchen and ordering from it:
 
-- **Design system** (`docs/DESIGN-SYSTEM.md`): warm paper, ink and terracotta;
-  Fraunces for headlines, Manrope for everything you read or tap; light and
-  dark themes, AA contrast throughout. The status banner is one 32px line and
-  the menu's filters live behind one button on phones, so a dish shows in the
-  first screen of every discovery page at 390px.
-- **Discovery:** filters for cuisine, flavor, heat, diet, cook time,
-  collection and "ways to get it", with counts, removable pills and shareable
-  URLs; search matches local scripts and ignores accents. Cards show one
-  flavor line; stories moved to the dish page.
-- **Dish pages:** Cook it / Get it cooked tabs on the same dish record. Price,
-  options and delivery time appear only where a kitchen, or the labeled demo,
-  serves the visitor's ZIP code.
-- **Guided cooking:** Chicken Momo first (servings, US/metric, swaps that say
-  which allergens they remove or add, timers that keep running, read aloud,
-  keep screen on, shopping list by aisle, safe resume). Written with AI
-  assistance from the dish's ingredient list and marked as a draft until it's
-  test-cooked.
-- **Demo commerce:** options, quantities, bag, checkout with delivery window,
-  fees, tax, tip and total before placing, a review step, guest checkout and
-  no card fields. Every screen says it's a demo.
-- **Content provenance:** ingredients, allergens, stories, flavor notes and
-  recipes carry a draft / reviewed / verified status and a source
-  (`src/lib/food/content.ts`). Everything is a draft until a kitchen signs it off.
-- **Images:** the 42 AI images are labeled "AI illustration"; the 8 stock photos
-  were checked again (`docs/IMAGE-AUDIT.md`). No photo catalog came with the
-  AI images, so their tool and license are still unknown.
-- **Offline:** saving a dish keeps its page, recipe and the scripts they need,
-  so a saved recipe works with no signal. The bag is kept; checkout waits for a
-  connection.
-- **QA:** `npm run qa` runs both flows, the offline checks, and axe-core
-  accessibility checks at six widths in light and dark.
+- **Your ZIP picks the kitchen.** Each kitchen (a delivery zone in
+  `src/lib/ordering/zones.ts`) has its own delivery area, hours, fees, tax,
+  menu for the day and, where it differs, its own prices. The kitchen's name
+  shows wherever a price does. Two labeled demo kitchens (West for ZIPs
+  starting with 8 or 9, East for the rest) show how menus, prices and fees
+  differ; no real kitchen is open yet.
+- **Pages:** the home page leads with "World food, cooked to order and
+  delivered" and how ordering works; dish pages put ordering right under the
+  dish; the menu filters by what your kitchen has on today and sorts by price;
+  a Locations page lists kitchens (and the demo ones).
+- **Kept from the 25 Sep pass:** the design system (`docs/DESIGN-SYSTEM.md`),
+  filters and search, cuisine pages, demo checkout with every cost before
+  placing and no card fields, content provenance, labeled images, offline
+  saved dishes and bag, and `npm run qa`.
 
 ## Status (24 Sep 2026)
 

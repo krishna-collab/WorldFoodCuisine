@@ -6,10 +6,10 @@
  * - /assets/ (hashed JS and CSS): cache first; the file names change on
  *   every deploy, so a cached copy is never stale.
  * - Dish photos, fonts and icons: served from cache, refreshed in the background.
- * - Saved dishes: the page, cook mode, image and the scripts and styles those
- *   pages need are kept in their own cache that is never trimmed, until the
- *   dish is unsaved. So a saved recipe opens and works offline even if its
- *   cook mode was never opened online.
+ * - Saved dishes: the dish page, its image and the scripts and styles the page
+ *   needs are kept in their own cache that is never trimmed, until the dish
+ *   is unsaved. So a saved dish opens offline even if it was saved from the
+ *   menu without ever being opened.
  * - Checkout, orders and server calls are never cached. Ordering is
  *   online-only; offline, those pages fall back to /offline.html.
  *
@@ -205,8 +205,8 @@ async function warm(urls) {
 }
 
 /**
- * Keep a saved dish's page, cook mode and image for offline use, with the
- * scripts and styles each page loads, so the pages work, not just show.
+ * Keep a saved dish's page and image for offline use, with the scripts and
+ * styles the page loads, so it works, not just shows.
  */
 async function keepSaved(urls) {
   const cache = await caches.open(SAVED);

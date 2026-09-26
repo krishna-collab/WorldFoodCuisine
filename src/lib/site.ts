@@ -4,7 +4,7 @@ export const SITE_NAME = "WorldFoodCuisine";
 export const SITE_URL = "https://world-food-cuisine.vercel.app";
 
 export const SITE_DESCRIPTION =
-  "Fifty dishes from India, Nepal, Thailand, Mexico and Italy, with every ingredient listed. Cooked with olive oil, butter and whole spices. No preservatives.";
+  "Fifty dishes from India, Nepal, Thailand, Mexico and Italy, cooked to order in delivery-only kitchens, with every ingredient listed. Cooked with olive oil, butter and whole spices. No preservatives.";
 
 /** The kitchen's promise, in the owner's words. Shown on the home and ingredients pages. */
 export const KITCHEN_PROMISE = [

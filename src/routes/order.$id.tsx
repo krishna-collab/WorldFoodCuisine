@@ -110,7 +110,11 @@ function OrderPage() {
         </ol>
       </section>
 
-      <dl className="mt-10 grid gap-4 border-y border-border py-5 text-sm sm:grid-cols-2">
+      <dl className="mt-10 grid gap-4 border-y border-border py-5 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-subtle">From</dt>
+          <dd className="mt-1 font-semibold">{order.zoneLabel}</dd>
+        </div>
         <div>
           <dt className="text-subtle">Delivery to</dt>
           <dd className="mt-1 font-semibold">ZIP {order.postalCode}</dd>

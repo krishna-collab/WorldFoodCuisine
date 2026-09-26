@@ -2,7 +2,6 @@ import { dishContent } from "./content.ts";
 import { cuisines, regionLabels } from "./cuisines.ts";
 import { dishRecords } from "./dishes.ts";
 import { editorial, tasteLabels } from "./editorial.ts";
-import { recipes } from "./recipes.ts";
 import type {
   Allergen,
   Collection,
@@ -15,21 +14,13 @@ import type {
 } from "./types.ts";
 
 /**
- * Every dish as the app sees it: the menu record, its editorial layer, where
- * each piece of content came from, and whether a guided recipe exists. A
- * guided recipe's own timing replaces the editorial estimate.
+ * Every dish as the app sees it: the menu record, its editorial layer, and
+ * where each piece of content came from.
  */
 export const dishes: Dish[] = dishRecords.map((record) => {
   const extra = editorial[record.id];
   if (!extra) throw new Error(`Missing editorial entry for ${record.id}`);
-  const recipe = recipes[record.id];
-  return {
-    ...record,
-    ...extra,
-    time: recipe?.time ?? extra.time,
-    content: dishContent(record),
-    hasRecipe: Boolean(recipe),
-  };
+  return { ...record, ...extra, content: dishContent(record) };
 });
 
 export { cuisines, regionLabels, tasteLabels };
@@ -51,11 +42,6 @@ export function dishesByCuisine(id: CuisineId) {
 
 export function featuredDishes() {
   return dishes.filter((d) => d.featured);
-}
-
-/** Dishes with a guided home recipe. */
-export function cookableDishes() {
-  return dishes.filter((d) => d.hasRecipe);
 }
 
 /** Dishes with an image (photo or labeled AI illustration), for places where imagery leads. */
@@ -122,13 +108,6 @@ export const courseGroups: { label: string; courses: Course[] }[] = [
 export const spiceLabel = ["Not spicy", "Mild", "Medium", "Hot"] as const;
 
 export const TASTES = Object.keys(tasteLabels) as Taste[];
-
-/** Cook-time filter buckets, by total minutes. */
-export const TIME_LIMITS = [
-  { value: 30, label: "30 min or less" },
-  { value: 60, label: "1 hour or less" },
-  { value: 120, label: "2 hours or less" },
-] as const;
 
 /** Editorial collections. Curated by hand; they say nothing about availability. */
 export const collections: Collection[] = [

@@ -21,7 +21,7 @@ export type Allergen =
 export type Course = "main" | "rice" | "noodles" | "bread" | "small-plate" | "soup" | "dessert";
 
 /** One component of a dish (dough, filling, sauce, side...) and what it's made of. */
-export type RecipePart = {
+export type DishPart = {
   label: string;
   items: string[];
 };
@@ -56,8 +56,8 @@ export type DishImage =
 
 /**
  * The menu record for a dish (src/lib/food/dishes.ts): what it is, what it's
- * made of and what it contains. The single identity shared by "Cook it" and
- * "Get it cooked".
+ * made of and what it contains. Every kitchen cooks from the same record;
+ * what a kitchen has on today and its price live with the kitchen (zones.ts).
  */
 export type DishRecord = {
   id: string;
@@ -71,13 +71,13 @@ export type DishRecord = {
   /** One or two editorial sentences on origin and preparation. */
   story: string;
   /** What the dish is made of, component by component. */
-  parts: RecipePart[];
+  parts: DishPart[];
   /** Fats the dish is cooked in (olive oil, butter, ghee). */
   cookedIn: string[];
   allergens: Allergen[];
   diet: DietTag[];
   spice: 0 | 1 | 2 | 3;
-  /** Planned price in US cents. Only shown where a delivery zone is active. */
+  /** Planned base price in US cents. Only shown where a kitchen (or the demo) serves the ZIP. */
   price: number;
   image: DishImage;
   featured?: boolean;
@@ -86,26 +86,14 @@ export type DishRecord = {
 /** Flavor notes for browsing. Editorial: read from the ingredient list. */
 export type Taste = "creamy" | "tangy" | "smoky" | "herby" | "sweet" | "earthy" | "rich" | "crisp";
 
-/** How long a dish takes to cook at home, in minutes. An estimate until a recipe is tested. */
-export type TimeEstimate = {
-  /** Hands-on time. */
-  active: number;
-  /** Start to finish, not counting any step named in `note`. */
-  total: number;
-  /** A long unattended step outside `total`, e.g. "plus overnight soaking". */
-  note?: string;
-};
-
 /**
  * Editorial layer on top of the menu record (src/lib/food/editorial.ts): the
- * one-line flavor description on cards, flavor filters and typical home
- * cooking time.
+ * one-line flavor description on cards and the flavor filters.
  */
 export type DishEditorial = {
   /** One line on what it tastes like, for cards. Under 80 characters. */
   flavor: string;
   tastes: Taste[];
-  time: TimeEstimate;
 };
 
 /** Where a piece of food content came from and who has checked it. */
@@ -130,92 +118,7 @@ export type DishContent = {
 export type Dish = DishRecord &
   DishEditorial & {
     content: DishContent;
-    /** True when a guided recipe exists (src/lib/food/recipes.ts). */
-    hasRecipe: boolean;
   };
-
-/** Units a recipe can use. Spoons and pieces read the same in metric and US. */
-export type Unit =
-  | "g"
-  | "kg"
-  | "ml"
-  | "l"
-  | "tsp"
-  | "tbsp"
-  | "cup"
-  | "oz"
-  | "lb"
-  | "piece"
-  | "clove"
-  | "pinch";
-
-export type Quantity = { amount: number; unit: Unit };
-
-export type Aisle = "produce" | "meat" | "dairy" | "spices" | "pantry";
-
-/** A safer or easier ingredient swap, and what it changes. */
-export type Substitute = {
-  name: string;
-  /** How much to use, if not the same amount. */
-  amount?: string;
-  /** What changes: flavor, texture, or that it's untested. Shown with the swap. */
-  note: string;
-  /** Where to find it in the shop, when that differs from the original. */
-  aisle?: Aisle;
-  /** Allergens the swap adds to or removes from the dish. */
-  adds?: Allergen[];
-  removes?: Allergen[];
-};
-
-export type RecipeIngredient = {
-  id: string;
-  /** The ingredient as named in the dish's parts list; the menu tests check the match. */
-  item: string;
-  /** Component it belongs to (a label from the dish's parts). */
-  part: string;
-  /** Name shown in the recipe, when it differs from `item` (e.g. "Maida (all-purpose flour)"). */
-  label?: string;
-  metric?: Quantity;
-  /** US kitchen measure when it differs from `metric` (cups instead of grams). */
-  us?: Quantity;
-  /** Size or preparation: "finely chopped", "medium". */
-  prep?: string;
-  /** Salt "to taste" and the like: shown without an amount and never scaled. */
-  toTaste?: boolean;
-  aisle: Aisle;
-  /** Major allergens this ingredient carries; together they must equal the dish's list. */
-  allergens?: Allergen[];
-  substitutes?: Substitute[];
-};
-
-export type RecipeStep = {
-  id: string;
-  /** Section shown in the progress bar: "Dough", "Filling", "Steam". */
-  section: string;
-  title: string;
-  /** What to do. `{ingredient-id}` is replaced by the scaled amount. */
-  text: string;
-  /** Ingredient ids this step uses, listed above the instructions. */
-  uses?: string[];
-  timer?: { seconds: number; label: string };
-  tip?: string;
-  /** Food-safety or burn warnings. */
-  caution?: string;
-};
-
-export type Recipe = {
-  dishId: string;
-  /** Servings the amounts are written for. */
-  servings: number;
-  /** What one batch makes, scaled with servings: "about {n} momos". */
-  yields?: { amount: number; noun: string };
-  time: TimeEstimate;
-  difficulty: "Easy" | "Medium" | "Takes practice";
-  equipment: string[];
-  ingredients: RecipeIngredient[];
-  steps: RecipeStep[];
-  content: ContentRecord;
-};
 
 export type Cuisine = {
   id: CuisineId;

@@ -18,9 +18,11 @@ import { useAreaStatus, useDeliveryArea } from "@/lib/store/delivery-area";
 import { cn, formatPrice } from "@/lib/utils";
 
 /**
- * "Get it cooked" on the dish page. Asks for a ZIP code only here, when it
- * matters; shows a price, delivery time and options only where a kitchen (or
- * the demo) serves that ZIP; never implies an order is possible when it isn't.
+ * Ordering on the dish page. The ZIP code picks the kitchen: each kitchen is
+ * delivery-only and has its own menu for the day, prices, hours and delivery
+ * time. Price, options and delivery time show only where a kitchen (or the
+ * labeled demo) serves that ZIP; nothing implies an order is possible when
+ * it isn't.
  */
 export function OrderPanel({ dish }: { dish: Dish }) {
   const area = useAreaStatus();
@@ -36,15 +38,15 @@ export function OrderPanel({ dish }: { dish: Dish }) {
       <div className="space-y-4">
         <p className="text-display-s">
           {area.kind === "unserved"
-            ? `Not delivering to ${area.postalCode} yet`
+            ? `No kitchen delivers to ${area.postalCode} yet`
             : ORDERING_LIVE
-              ? "Is it delivered near you?"
-              : "Not on sale yet"}
+              ? "Which kitchen delivers to you?"
+              : "No kitchen is open yet"}
         </p>
         <p className="leading-relaxed text-muted">
           {ORDERING_LIVE
-            ? "Enter your ZIP code to see what the nearest kitchen is making today, the full price and delivery times."
-            : "No kitchen is cooking yet, so we can’t deliver anywhere. When one opens, this is where you’ll see today’s price and delivery times for your ZIP code."}
+            ? "Enter your ZIP code to find the kitchen that delivers to you, with its menu for today, prices and delivery time."
+            : "WorldFoodCuisine kitchens cook to order and deliver; there’s no dining room. None is open yet, so nothing can be ordered. When one opens, your ZIP code will find it here."}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="clay" size="lg" onClick={openDialog}>
@@ -77,15 +79,19 @@ export function OrderPanel({ dish }: { dish: Dish }) {
       <div className="space-y-3">
         <p className="text-display-s">{status.reason}</p>
         <p className="leading-relaxed text-muted">
-          The kitchen serving {area.postalCode}
-          {zone.demo ? " (demo)" : ""} isn’t making {dish.name} right now. You can still cook it at
-          home, or choose another dish.
+          {zone.label}, which delivers to {area.postalCode}, isn’t making {dish.name} today. Other
+          kitchens set their own menus, so it may be on elsewhere.
         </p>
-        <Button asChild variant="secondary">
-          <Link to="/menu" search={{ ways: "order" }}>
-            See what’s available
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="secondary">
+            <Link to="/menu" search={{ available: true }}>
+              See today’s menu
+            </Link>
+          </Button>
+          <Button variant="ghost" onClick={openDialog}>
+            Change ZIP
+          </Button>
+        </div>
       </div>
     );
   }
@@ -102,7 +108,8 @@ export function OrderPanel({ dish }: { dish: Dish }) {
           ) : null}
         </p>
         <p className="text-sm text-muted">
-          To {area.postalCode} in about {zone.etaMinutes[0]}–{zone.etaMinutes[1]} min ·{" "}
+          From <span className="font-semibold text-fg">{zone.label}</span> to {area.postalCode} in about{" "}
+          {zone.etaMinutes[0]}–{zone.etaMinutes[1]} min ·{" "}
           <button type="button" onClick={openDialog} className="text-link font-semibold">
             Change<span className="sr-only"> ZIP code</span>
           </button>
@@ -151,7 +158,7 @@ export function OrderPanel({ dish }: { dish: Dish }) {
         {dish.allergens.length
           ? dish.allergens.map((a) => allergenLabels[a]).join(", ")
           : "none of the nine major allergens"}
-        {dish.content.allergens.status === "draft" ? " (from our draft recipe)" : ""}
+        {dish.content.allergens.status === "draft" ? " (draft: not yet confirmed by a kitchen)" : ""}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">

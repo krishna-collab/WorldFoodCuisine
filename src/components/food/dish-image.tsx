@@ -20,8 +20,8 @@ type DishImageProps = {
 };
 
 /**
- * The one image component for a dish, used on cards, detail pages, cook mode
- * and the bag, so every surface shows the same image and label. Stock photos
+ * The one image component for a dish, used on cards, detail pages, the bag
+ * and checkout, so every surface shows the same image and label. Stock photos
  * are labeled "Representative photo" and AI images "AI illustration"; our own
  * photos need no label; dishes without an accurate image get a placeholder.
  * The focal point stored with each image keeps the food in frame at any crop.

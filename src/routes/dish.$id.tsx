@@ -1,7 +1,5 @@
-import * as Tabs from "@radix-ui/react-tabs";
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { ChefHat, ChevronRight, Truck } from "lucide-react";
-import { CookPanel } from "@/components/food/cook-panel";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 import { DishCard } from "@/components/food/dish-card";
 import { DishFacts } from "@/components/food/dish-facts";
 import { DishImage } from "@/components/food/dish-image";
@@ -19,20 +17,12 @@ import {
   regionLabels,
 } from "@/lib/food/data";
 import { IMAGE_LABELS, imageSrcSet, imageUrl } from "@/lib/food/images";
-import { formatDuration } from "@/lib/food/quantity";
-import { recipeFor } from "@/lib/food/recipes";
 import type { Dish } from "@/lib/food/types";
 import { pageHead } from "@/lib/site";
-import { useAreaStatus } from "@/lib/store/delivery-area";
-import { cn } from "@/lib/utils";
 
-type Path = "cook" | "order";
 const IMAGE_SIZES = "(min-width: 1024px) 55vw, 100vw";
 
 export const Route = createFileRoute("/dish/$id")({
-  validateSearch: (search: Record<string, unknown>): { path?: Path } => ({
-    path: search.path === "order" || search.path === "cook" ? search.path : undefined,
-  }),
   beforeLoad: ({ params }) => {
     if (!dishById[params.id]) throw notFound();
   },
@@ -65,74 +55,13 @@ export const Route = createFileRoute("/dish/$id")({
   component: DishPage,
 });
 
-function PathTabs({ dish, path }: { dish: Dish; path: Path }) {
-  const navigate = useNavigate({ from: Route.fullPath });
-  const area = useAreaStatus();
-  const recipe = recipeFor(dish.id);
-  const orderNote =
-    area.kind === "served"
-      ? area.zone.demo
-        ? "Demo ordering"
-        : `Deliver to ${area.postalCode}`
-      : "Not delivering yet";
-
-  const trigger =
-    "group flex min-h-16 flex-1 items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors data-[state=inactive]:hover:bg-sunken";
-
-  return (
-    <Tabs.Root
-      value={path}
-      onValueChange={(v) =>
-        void navigate({ search: { path: v as Path }, replace: true, resetScroll: false })
-      }
-      className="mt-7"
-    >
-      <Tabs.List
-        aria-label="How do you want to eat it?"
-        className="flex gap-1 rounded-2xl bg-surface p-1.5 shadow-[var(--shadow-hairline)]"
-      >
-        <Tabs.Trigger
-          value="cook"
-          className={cn(trigger, "data-[state=active]:bg-herb data-[state=active]:text-herb-fg")}
-        >
-          <ChefHat className="size-6 shrink-0" aria-hidden="true" />
-          <span>
-            <span className="block font-bold">Cook it</span>
-            <span className="block text-xs opacity-80">
-              {recipe ? "Guided recipe" : "Recipe coming"}
-            </span>
-          </span>
-        </Tabs.Trigger>
-        <Tabs.Trigger
-          value="order"
-          className={cn(trigger, "data-[state=active]:bg-clay data-[state=active]:text-clay-fg")}
-        >
-          <Truck className="size-6 shrink-0" aria-hidden="true" />
-          <span>
-            <span className="block font-bold">Get it cooked</span>
-            <span className="block text-xs opacity-80">{orderNote}</span>
-          </span>
-        </Tabs.Trigger>
-      </Tabs.List>
-      <Tabs.Content value="cook" className="mt-6 focus-visible:outline-offset-4">
-        <CookPanel dish={dish} />
-      </Tabs.Content>
-      <Tabs.Content value="order" className="mt-6 focus-visible:outline-offset-4">
-        <OrderPanel dish={dish} />
-      </Tabs.Content>
-    </Tabs.Root>
-  );
-}
-
 function AboutThisInformation({ dish }: { dish: Dish }) {
-  const recipe = recipeFor(dish.id);
   const image = dish.image;
   const rows = [
     { label: "Ingredients", record: dish.content.ingredients },
     { label: "Allergens", record: dish.content.allergens },
-    ...(recipe ? [{ label: "Guided recipe", record: recipe.content }] : []),
     { label: "Story", record: dish.content.story },
-    { label: "Flavor notes and cooking time", record: dish.content.editorial },
+    { label: "Flavor notes", record: dish.content.editorial },
   ];
   return (
     <section aria-labelledby="about-info" className="rounded-2xl bg-sunken p-6 lg:p-8">
@@ -170,7 +99,6 @@ function AboutThisInformation({ dish }: { dish: Dish }) {
 
 function DishPage() {
   const { id } = Route.useParams();
-  const { path } = Route.useSearch();
   const dish = dishById[id];
   if (!dish) return null;
   const cuisine = cuisineById[dish.cuisine];
@@ -205,7 +133,7 @@ function DishPage() {
             <ol className="flex flex-wrap items-center gap-1 text-sm text-muted">
               <li>
                 <Link to="/menu" className="inline-flex min-h-6 items-center hover:text-fg">
-                  Dishes
+                  Menu
                 </Link>
               </li>
               <li aria-hidden="true">
@@ -236,7 +164,12 @@ function DishPage() {
           ) : null}
           <p className="mt-4 text-lede text-muted">{dish.flavor}.</p>
           <DishFacts dish={dish} className="mt-4 text-sm" />
-          <PathTabs dish={dish} path={path ?? "cook"} />
+          <section
+            aria-label={`Order ${dish.name}`}
+            className="mt-7 rounded-2xl bg-surface p-5 shadow-[var(--shadow-hairline)] sm:p-6"
+          >
+            <OrderPanel dish={dish} />
+          </section>
         </div>
       </div>
 
@@ -255,9 +188,7 @@ function DishPage() {
               {dish.story}
             </p>
             <p className="mt-4 text-sm text-subtle">
-              {regionLabels[cuisine.region]} · {courseLabels[dish.course]} · Typically{" "}
-              {formatDuration(dish.time.total)} to cook at home
-              {dish.time.note ? `, ${dish.time.note}` : ""}
+              {regionLabels[cuisine.region]} · {courseLabels[dish.course]}
             </p>
           </div>
         </section>

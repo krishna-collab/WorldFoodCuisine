@@ -23,12 +23,12 @@ export function SiteFooter() {
         <div className="max-w-sm sm:col-span-3 md:col-span-1">
           <Wordmark />
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            Dishes from five cuisines to start, each with its story and every ingredient listed.
-            Cook them at home, or have them cooked for you once our first kitchen opens.
+            Dishes from five cuisines to start, each with its story and every ingredient listed,
+            cooked to order in delivery-only kitchens. No dining rooms: we bring it to you.
           </p>
           <InstallButton className="mt-5" />
         </div>
-        <Column title="Explore">
+        <Column title="Menu">
           <li>
             <Link to="/menu" className={linkClass}>
               All dishes
@@ -42,15 +42,10 @@ export function SiteFooter() {
             </li>
           ))}
         </Column>
-        <Column title="Cook at home">
+        <Column title="Order">
           <li>
-            <Link to="/cook" className={linkClass}>
-              Guided recipes
-            </Link>
-          </li>
-          <li>
-            <Link to="/list" className={linkClass}>
-              Shopping list
+            <Link to="/delivery" className={linkClass}>
+              Locations
             </Link>
           </li>
           <li>
@@ -59,12 +54,7 @@ export function SiteFooter() {
             </Link>
           </li>
         </Column>
-        <Column title="Get it cooked">
-          <li>
-            <Link to="/delivery" className={linkClass}>
-              Where we deliver
-            </Link>
-          </li>
+        <Column title="About the food">
           <li>
             <Link to="/ingredients" className={linkClass}>
               What’s in our food
@@ -77,7 +67,7 @@ export function SiteFooter() {
           <p className="max-w-3xl">
             We’re not delivering yet; ordering on this site is a demo. Images marked
             “Representative photo” are stock photos and images marked “AI illustration” were
-            generated with AI. Neither shows our food. Recipes and allergens are drafts until a
+            generated with AI. Neither shows our food. Ingredients and allergens are drafts until a
             kitchen confirms them.
           </p>
           <p className="shrink-0">© {new Date().getFullYear()} WorldFoodCuisine</p>

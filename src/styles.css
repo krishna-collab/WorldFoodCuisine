@@ -192,11 +192,6 @@
     }
   }
 
-  html:has([data-cook-mode]) {
-    scroll-padding-top: 7rem;
-    scroll-padding-bottom: 7.5rem;
-  }
-
   body {
     min-height: 100dvh;
     background: var(--color-bg);
@@ -362,18 +357,6 @@
 }
 .rise-4 {
   animation-delay: 210ms;
-}
-
-@keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent);
-  }
-  100% {
-    box-shadow: 0 0 0 14px transparent;
-  }
-}
-.timer-done {
-  animation: pulse-ring 1.2s ease-out infinite;
 }
 
 /* Skeleton shimmer for content that waits on the browser (bag, saved dishes). */

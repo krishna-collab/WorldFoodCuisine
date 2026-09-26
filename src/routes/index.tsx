@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ChefHat, Clock, Droplets, MapPin, Search, Sprout, Truck, Users } from "lucide-react";
+import { ArrowRight, ChefHat, Droplets, MapPin, Search, Sprout } from "lucide-react";
 import { DishCard } from "@/components/food/dish-card";
 import { DishImage } from "@/components/food/dish-image";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,9 @@ import {
   regionLabels,
 } from "@/lib/food/data";
 import { imageSrcSet, imageUrl } from "@/lib/food/images";
-import { formatDuration } from "@/lib/food/quantity";
-import { recipeFor } from "@/lib/food/recipes";
+import { ORDERING_LIVE } from "@/lib/ordering/zones";
 import { KITCHEN_PROMISE, SITE_DESCRIPTION, pageHead } from "@/lib/site";
-import { useDeliveryArea } from "@/lib/store/delivery-area";
+import { useAreaStatus, useDeliveryArea } from "@/lib/store/delivery-area";
 import { useUi } from "@/lib/store/ui";
 
 const HERO_ID = "chicken-momo";
@@ -28,7 +27,7 @@ const HERO_SIZES = "(min-width: 1024px) 40vw, 100vw";
 export const Route = createFileRoute("/")({
   head: () => {
     const head = pageHead({
-      title: "Cook it, or get it cooked",
+      title: "World food, cooked to order and delivered",
       description: SITE_DESCRIPTION,
       path: "/",
     });
@@ -54,11 +53,26 @@ export const Route = createFileRoute("/")({
 
 const PROMISE_ICONS = [Droplets, ChefHat, Sprout];
 
+const HOW = [
+  {
+    title: "Enter your ZIP code",
+    body: "It finds the WorldFoodCuisine kitchen that delivers to you. Each kitchen sets its own menu for the day, prices and delivery times.",
+  },
+  {
+    title: "Order from its menu",
+    body: "Every dish lists its ingredients and allergens. You see the full price, with delivery, tax and tip, before you place the order.",
+  },
+  {
+    title: "It’s cooked and delivered",
+    body: "The kitchen cooks your order and sends it to your door. Our kitchens are delivery-only: there are no dining rooms.",
+  },
+];
+
 function Home() {
   const openDialog = useDeliveryArea((s) => s.openDialog);
+  const area = useAreaStatus();
   const openSearch = useUi((s) => s.openSearch);
   const hero = dishById[HERO_ID]!;
-  const recipe = recipeFor(HERO_ID)!;
 
   return (
     <div>
@@ -81,14 +95,9 @@ function Home() {
                   labelPosition="top-left"
                 />
               </Link>
-              <figcaption className="gutter mt-2 flex items-baseline justify-between gap-3 text-sm text-muted lg:px-0">
-                <span>
-                  <span className="font-semibold text-fg">{hero.name}</span> ·{" "}
-                  {cuisineById[hero.cuisine].name}
-                </span>
-                <span className="inline-flex items-center gap-1 text-herb">
-                  <ChefHat className="size-3.5" aria-hidden="true" /> Guided recipe
-                </span>
+              <figcaption className="gutter mt-2 text-sm text-muted lg:px-0">
+                <span className="font-semibold text-fg">{hero.name}</span> ·{" "}
+                {cuisineById[hero.cuisine].name}
               </figcaption>
             </figure>
             {SPREAD.map((id) => {
@@ -110,28 +119,49 @@ function Home() {
 
         <div className="gutter pt-5 pb-10 lg:order-1 lg:col-span-5 lg:flex lg:flex-col lg:justify-center lg:px-0 lg:py-6">
           <p className="eyebrow hidden text-accent lg:block">
-            {dishes.length} dishes · 5 cuisines · every ingredient listed
+            {dishes.length} dishes · 5 cuisines · delivery only
           </p>
+          {/* Fixed line breaks: the headline wraps the same way in the fallback
+              serif and in Fraunces, so the font swap doesn't move the page (CLS). */}
           <h1 className="rise text-display-xl lg:mt-5">
-            Cook it, or <span className="text-accent">get it cooked.</span>
+            World food,
+            <br />
+            <span className="text-accent">
+              cooked to order
+              <br />
+              and delivered.
+            </span>
           </h1>
           <p className="rise rise-2 mt-4 max-w-md text-lede text-muted">
-            Dishes from India, Nepal, Thailand, Mexico and Italy, each with its story and every
-            ingredient listed. Make one tonight, or order it once our first kitchen opens.
+            Dishes from India, Nepal, Thailand, Mexico and Italy, every ingredient listed. Each
+            WorldFoodCuisine kitchen cooks when you order and delivers to your door; there’s no
+            dining room.
           </p>
           <div className="rise rise-3 mt-6 grid grid-cols-2 gap-2.5 sm:max-w-md">
-            <Button asChild variant="herb" size="xl" className="px-4">
-              <Link to="/cook">
-                <ChefHat className="size-5" aria-hidden="true" />
-                Cook it
-              </Link>
-            </Button>
-            <Button asChild variant="clay" size="xl" className="px-4">
-              <Link to="/delivery">
-                <Truck className="size-5" aria-hidden="true" />
-                Get it cooked
-              </Link>
-            </Button>
+            {area.kind === "served" ? (
+              <>
+                <Button asChild variant="clay" size="xl" className="px-4">
+                  <Link to="/menu" search={{ available: true }}>
+                    Today’s menu
+                  </Link>
+                </Button>
+                <Button variant="secondary" size="xl" className="px-4" onClick={openDialog}>
+                  <MapPin className="size-5" aria-hidden="true" />
+                  {area.postalCode}
+                  <span className="sr-only">: change ZIP code</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="clay" size="xl" className="px-4" onClick={openDialog}>
+                  <MapPin className="size-5" aria-hidden="true" />
+                  Find your kitchen
+                </Button>
+                <Button asChild variant="secondary" size="xl" className="px-4">
+                  <Link to="/menu">See the menu</Link>
+                </Button>
+              </>
+            )}
           </div>
           <button
             type="button"
@@ -144,58 +174,41 @@ function Home() {
         </div>
       </section>
 
-      {/* ── The two paths, honestly described. ── */}
-      <section aria-labelledby="paths" className="border-y border-border bg-surface">
+      {/* ── How ordering works: a real sequence, so it's numbered. ── */}
+      <section aria-labelledby="how" className="border-y border-border bg-surface">
         <div className="gutter mx-auto max-w-[90rem] py-14 lg:py-20">
-          <h2 id="paths" className="max-w-2xl text-display-m">
-            One dish, two ways to eat it.
-          </h2>
-          <div className="mt-10 grid gap-10 md:grid-cols-2 md:gap-0 md:divide-x md:divide-border">
-            <div className="md:pr-10">
-              <p className="eyebrow text-herb">Cook it · available now</p>
-              <h3 className="mt-3 text-display-s">A recipe that cooks with you</h3>
-              <p className="mt-3 max-w-lg leading-relaxed text-muted">
-                Scale the servings, swap what you can’t find (with a warning when a swap changes
-                an allergen), run timers side by side and tick off a shopping list in the shop. It
-                keeps your place if you leave. The first guided recipe is {hero.name}; more are
-                being written and tested.
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="how" className="max-w-2xl text-display-m">
+              From the kitchen near you, to your door
+            </h2>
+            {!ORDERING_LIVE ? (
+              <p className="max-w-sm text-sm leading-relaxed text-muted">
+                No kitchen is open yet. Until one is, the whole flow works as a clearly marked demo;
+                nothing is sent or charged.
               </p>
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Button asChild variant="herb" size="lg">
-                  <Link to="/dish/$id/cook" params={{ id: hero.id }}>
-                    Cook {hero.name}
-                  </Link>
-                </Button>
-                <p className="flex items-center gap-4 text-sm text-muted">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="size-4" aria-hidden="true" /> {formatDuration(recipe.time.total)}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Users className="size-4" aria-hidden="true" /> Serves {recipe.servings}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="md:pl-10">
-              <p className="eyebrow text-clay">Get it cooked · not yet</p>
-              <h3 className="mt-3 text-display-s">Ordering starts with your ZIP code</h3>
-              <p className="mt-3 max-w-lg leading-relaxed text-muted">
-                No kitchen is open yet, so we don’t deliver anywhere. When one opens, you’ll see
-                what it is making today, the full price with fees and tax, and real delivery
-                windows before you pay. Until then, the whole flow works as a clearly marked demo.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button variant="secondary" size="lg" onClick={openDialog}>
-                  <MapPin className="size-4" aria-hidden="true" />
-                  Check your ZIP
-                </Button>
-                <Button asChild variant="ghost" size="lg">
-                  <Link to="/delivery">
-                    Try the demo <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            ) : null}
+          </div>
+          <ol className="mt-10 grid gap-10 md:grid-cols-3 md:gap-8">
+            {HOW.map((step, i) => (
+              <li key={step.title} className="border-t-2 border-fg pt-4">
+                <span className="nums font-display text-lg text-accent" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3 className="mt-2 text-display-s">{step.title}</h3>
+                <p className="mt-2 max-w-md leading-relaxed text-muted">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Button variant="clay" size="lg" onClick={openDialog}>
+              <MapPin className="size-4" aria-hidden="true" />
+              Check your ZIP
+            </Button>
+            <Button asChild variant="ghost" size="lg">
+              <Link to="/delivery">
+                Our kitchens and the demo <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

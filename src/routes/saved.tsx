@@ -29,8 +29,8 @@ function SavedPage() {
       <h1 className="text-display-l">Saved dishes</h1>
       <p className="mt-3 flex max-w-2xl items-start gap-2 text-muted">
         <WifiOff className="mt-1 size-4 shrink-0" aria-hidden="true" />
-        Kept on this device. Once a dish is saved, its page, image and guided recipe open without a
-        connection.
+        Kept on this device, so your favorites are one tap from ordering again. Saved dish pages
+        also open without a connection.
       </p>
       {!hydrated ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
@@ -43,10 +43,10 @@ function SavedPage() {
           <Heart className="mx-auto size-10 text-subtle" strokeWidth={1.5} aria-hidden="true" />
           <p className="mt-4 text-display-s">Nothing saved yet</p>
           <p className="mx-auto mt-2 max-w-sm text-muted">
-            Tap the heart on any dish to keep it here, for later and for offline.
+            Tap the heart on any dish to keep it here for your next order.
           </p>
           <Button asChild className="mt-6">
-            <Link to="/menu">Browse dishes</Link>
+            <Link to="/menu">See the menu</Link>
           </Button>
         </div>
       ) : (
@@ -59,7 +59,7 @@ function SavedPage() {
         </ul>
       )}
       <div className="mt-10">
-        <InstallButton size="md" label="Install the app for offline use" />
+        <InstallButton size="md" label="Install the app" />
       </div>
     </div>
   );

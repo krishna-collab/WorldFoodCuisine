@@ -4,7 +4,7 @@ import { dishById } from "@/lib/food/data";
 
 /**
  * Saved dishes. Kept in this browser; saving also asks the service worker to
- * keep the dish page, its image and its recipe for offline use.
+ * keep the dish page and its image for offline use.
  */
 type SavedState = {
   ids: string[];
@@ -31,12 +31,11 @@ export const useSaved = create<SavedState>()(
   ),
 );
 
-/** URLs that make a dish usable offline: its page, cook mode and image. */
+/** URLs that make a dish readable offline: its page and image. */
 export function offlineUrlsFor(dishId: string): string[] {
   const dish = dishById[dishId];
   if (!dish) return [];
   const urls = [`/dish/${dishId}`];
-  if (dish.hasRecipe) urls.push(`/dish/${dishId}/cook`);
   if (dish.image.kind !== "placeholder") urls.push(dish.image.src);
   return urls;
 }

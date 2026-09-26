@@ -29,8 +29,10 @@ export function CartDrawer() {
   const openDialog = useDeliveryArea((s) => s.openDialog);
   const count = cartCount(items);
   const zone = area.kind === "served" ? area.zone : null;
-  const summary = zone ? priceSummary(cartSubtotal(items, zone), zone) : null;
   const unavailable = zone ? items.filter((i) => !menuStatus(dishById[i.dishId]!, zone).available) : [];
+  // Only what this kitchen can make counts toward the price.
+  const orderable = items.filter((i) => !unavailable.includes(i));
+  const summary = zone ? priceSummary(cartSubtotal(orderable, zone), zone) : null;
   const allergens = bagAllergens(items);
 
   const footer =
@@ -60,26 +62,35 @@ export function CartDrawer() {
             You’re offline. Your bag is saved; checkout needs a connection.
           </p>
         ) : null}
-        <Button asChild={online && unavailable.length === 0} size="lg" variant="clay" className="w-full" disabled={!online || unavailable.length > 0}>
-          {online && unavailable.length === 0 ? (
+        {unavailable.length ? (
+          <p className="text-sm font-semibold text-danger">
+            {zone.label} isn’t making {unavailable.length === 1 ? "one dish" : `${unavailable.length} dishes`} in
+            your bag today. Remove {unavailable.length === 1 ? "it" : "them"} to check out; the prices
+            above leave {unavailable.length === 1 ? "it" : "them"} out.
+          </p>
+        ) : null}
+        {online && unavailable.length === 0 ? (
+          <Button asChild size="lg" variant="clay" className="w-full">
             <Link to="/checkout" onClick={() => setOpen(false)}>
               Checkout{zone.demo ? " (demo)" : ""}
             </Link>
-          ) : (
-            <span>{unavailable.length ? "Remove unavailable dishes to continue" : "Checkout needs a connection"}</span>
-          )}
-        </Button>
+          </Button>
+        ) : (
+          <Button size="lg" variant="clay" className="w-full" disabled>
+            Checkout{zone.demo ? " (demo)" : ""}
+          </Button>
+        )}
       </div>
     ) : (
       <div className="space-y-3 text-sm text-muted">
         <p>
           {area.kind === "unserved"
-            ? `We’re not delivering to ${area.postalCode} yet, so this bag can’t be ordered. It stays saved here.`
-            : "Set your ZIP code to see prices and whether we deliver to you. Your bag stays saved here."}
+            ? `No kitchen delivers to ${area.postalCode} yet, so this bag can’t be ordered. It stays saved here.`
+            : "Set your ZIP code to find the kitchen that delivers to you and see its prices. Your bag stays saved here."}
         </p>
         <Button className="w-full" variant="secondary" size="lg" onClick={openDialog}>
           <MapPin className="size-4" aria-hidden="true" />
-          {area.kind === "unserved" ? "Try another ZIP code" : "Check delivery"}
+          {area.kind === "unserved" ? "Try another ZIP code" : "Find your kitchen"}
         </Button>
       </div>
     );
@@ -91,7 +102,7 @@ export function CartDrawer() {
       title="Your bag"
       description={
         count
-          ? `${count} ${count === 1 ? "dish" : "dishes"}${zone ? ` · ZIP ${area.kind === "served" ? area.postalCode : ""}${zone.demo ? " · demo" : ""}` : ""}`
+          ? `${count} ${count === 1 ? "dish" : "dishes"}${zone && area.kind === "served" ? ` from ${zone.label} to ${area.postalCode}` : ""}`
           : undefined
       }
       footer={footer}
@@ -157,7 +168,7 @@ export function CartDrawer() {
             <p className="font-semibold">Allergens in this bag</p>
             <p className="mt-1 text-muted">
               {allergens.length ? allergens.map((a) => allergenLabels[a]).join(", ") : "None of the nine major allergens."}{" "}
-              From our draft recipes; confirmed by the kitchen before anything goes on sale.
+              From our draft ingredient lists; a kitchen confirms them before anything goes on sale.
             </p>
           </div>
         </>

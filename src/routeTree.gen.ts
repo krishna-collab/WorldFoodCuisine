@@ -11,11 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CookRouteImport } from './routes/cook'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as IngredientsRouteImport } from './routes/ingredients'
 import { Route as KitchensRouteImport } from './routes/kitchens'
-import { Route as ListRouteImport } from './routes/list'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as SavedRouteImport } from './routes/saved'
@@ -23,7 +21,6 @@ import { Route as TraceRouteImport } from './routes/trace'
 import { Route as DishIdRouteImport } from './routes/dish.$id'
 import { Route as MenuCuisineRouteImport } from './routes/menu.$cuisine'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
-import { Route as DishIdCookRouteImport } from './routes/dish_.$id.cook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,11 +30,6 @@ const IndexRoute = IndexRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CookRoute = CookRouteImport.update({
-  id: '/cook',
-  path: '/cook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeliveryRoute = DeliveryRouteImport.update({
@@ -53,11 +45,6 @@ const IngredientsRoute = IngredientsRouteImport.update({
 const KitchensRoute = KitchensRouteImport.update({
   id: '/kitchens',
   path: '/kitchens',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ListRoute = ListRouteImport.update({
-  id: '/list',
-  path: '/list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MenuRoute = MenuRouteImport.update({
@@ -95,20 +82,13 @@ const OrderIdRoute = OrderIdRouteImport.update({
   path: '/order/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DishIdCookRoute = DishIdCookRouteImport.update({
-  id: '/dish_/$id/cook',
-  path: '/dish/$id/cook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
-  '/cook': typeof CookRoute
   '/delivery': typeof DeliveryRoute
   '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
-  '/list': typeof ListRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
   '/saved': typeof SavedRoute
@@ -116,16 +96,13 @@ export interface FileRoutesByFullPath {
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
   '/order/$id': typeof OrderIdRoute
-  '/dish/$id/cook': typeof DishIdCookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
-  '/cook': typeof CookRoute
   '/delivery': typeof DeliveryRoute
   '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
-  '/list': typeof ListRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
   '/saved': typeof SavedRoute
@@ -133,17 +110,14 @@ export interface FileRoutesByTo {
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
   '/order/$id': typeof OrderIdRoute
-  '/dish/$id/cook': typeof DishIdCookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRoute
-  '/cook': typeof CookRoute
   '/delivery': typeof DeliveryRoute
   '/ingredients': typeof IngredientsRoute
   '/kitchens': typeof KitchensRoute
-  '/list': typeof ListRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
   '/saved': typeof SavedRoute
@@ -151,18 +125,15 @@ export interface FileRoutesById {
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
   '/order/$id': typeof OrderIdRoute
-  '/dish_/$id/cook': typeof DishIdCookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/checkout'
-    | '/cook'
     | '/delivery'
     | '/ingredients'
     | '/kitchens'
-    | '/list'
     | '/menu'
     | '/partners'
     | '/saved'
@@ -170,16 +141,13 @@ export interface FileRouteTypes {
     | '/dish/$id'
     | '/menu/$cuisine'
     | '/order/$id'
-    | '/dish/$id/cook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/checkout'
-    | '/cook'
     | '/delivery'
     | '/ingredients'
     | '/kitchens'
-    | '/list'
     | '/menu'
     | '/partners'
     | '/saved'
@@ -187,16 +155,13 @@ export interface FileRouteTypes {
     | '/dish/$id'
     | '/menu/$cuisine'
     | '/order/$id'
-    | '/dish/$id/cook'
   id:
     | '__root__'
     | '/'
     | '/checkout'
-    | '/cook'
     | '/delivery'
     | '/ingredients'
     | '/kitchens'
-    | '/list'
     | '/menu'
     | '/partners'
     | '/saved'
@@ -204,24 +169,20 @@ export interface FileRouteTypes {
     | '/dish/$id'
     | '/menu/$cuisine'
     | '/order/$id'
-    | '/dish_/$id/cook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckoutRoute: typeof CheckoutRoute
-  CookRoute: typeof CookRoute
   DeliveryRoute: typeof DeliveryRoute
   IngredientsRoute: typeof IngredientsRoute
   KitchensRoute: typeof KitchensRoute
-  ListRoute: typeof ListRoute
   MenuRoute: typeof MenuRouteWithChildren
   PartnersRoute: typeof PartnersRoute
   SavedRoute: typeof SavedRoute
   TraceRoute: typeof TraceRoute
   DishIdRoute: typeof DishIdRoute
   OrderIdRoute: typeof OrderIdRoute
-  DishIdCookRoute: typeof DishIdCookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -238,13 +199,6 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cook': {
-      id: '/cook'
-      path: '/cook'
-      fullPath: '/cook'
-      preLoaderRoute: typeof CookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/delivery': {
@@ -266,13 +220,6 @@ declare module '@tanstack/react-router' {
       path: '/kitchens'
       fullPath: '/kitchens'
       preLoaderRoute: typeof KitchensRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/list': {
-      id: '/list'
-      path: '/list'
-      fullPath: '/list'
-      preLoaderRoute: typeof ListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/menu': {
@@ -324,13 +271,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dish_/$id/cook': {
-      id: '/dish_/$id/cook'
-      path: '/dish/$id/cook'
-      fullPath: '/dish/$id/cook'
-      preLoaderRoute: typeof DishIdCookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -347,18 +287,15 @@ const MenuRouteWithChildren = MenuRoute._addFileChildren(MenuRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRoute,
-  CookRoute: CookRoute,
   DeliveryRoute: DeliveryRoute,
   IngredientsRoute: IngredientsRoute,
   KitchensRoute: KitchensRoute,
-  ListRoute: ListRoute,
   MenuRoute: MenuRouteWithChildren,
   PartnersRoute: PartnersRoute,
   SavedRoute: SavedRoute,
   TraceRoute: TraceRoute,
   DishIdRoute: DishIdRoute,
   OrderIdRoute: OrderIdRoute,
-  DishIdCookRoute: DishIdCookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
