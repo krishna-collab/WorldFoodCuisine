@@ -1,5 +1,5 @@
 import type { Dish } from "./types.ts";
-import { placeholder, representative } from "./images.ts";
+import { generated, representative } from "./images.ts";
 
 export const dishes: Dish[] = [
   // ─── India ────────────────────────────────────────────────────────────────
@@ -272,8 +272,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 1350,
-    image: placeholder(
-      "Palak paneer: cubes of paneer in a smooth green spinach gravy with a swirl of cream",
+    image: generated(
+      "/food/palak-paneer-ai.jpg",
+      "Palak paneer: cubes of paneer in a dark green spinach gravy, in a ceramic bowl, with naan behind",
+      { focal: "45% 55%", note: "The naan behind the bowl isn't part of this dish." },
     ),
   },
   {
@@ -335,8 +337,10 @@ export const dishes: Dish[] = [
     price: 1490,
     // The old photo showed a dark brown curry, not the orange, cream-finished
     // tikka masala on this menu (the same scene was also used for another dish).
-    image: placeholder(
-      "Chicken tikka masala: charred chunks of chicken tikka in a smooth orange tomato-and-cream sauce, served with naan",
+    image: generated(
+      "/food/tikka-masala-ai.jpg",
+      "Chicken tikka masala: charred chicken pieces in an orange cream sauce with cilantro, naan behind the bowl",
+      { focal: "50% 55%", note: "The naan behind the bowl isn't part of this dish." },
     ),
   },
   {
@@ -401,8 +405,10 @@ export const dishes: Dish[] = [
     price: 1590,
     // The old photo showed boneless chicken skewers on a charcoal grill, not
     // bone-in tandoori chicken from a tandoor.
-    image: placeholder(
-      "Tandoori Chicken: bone-in chicken legs with a deep red yogurt-and-spice marinade, charred at the edges from the tandoor, served with sliced red onion and lemon",
+    image: generated(
+      "/food/tandoori-chicken-ai.jpg",
+      "Tandoori chicken: two charred, deep red bone-in chicken legs with sliced red onion and lemon wedges",
+      { focal: "60% 50%" },
     ),
   },
   {
@@ -454,8 +460,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 1190,
-    image: placeholder(
-      "Dal makhani: dark, creamy black lentils in a bowl, finished with a swirl of cream and a pat of butter",
+    image: generated(
+      "/food/dal-makhani-ai.jpg",
+      "Dal makhani: dark black lentils in a copper pot with a swirl of cream and a pat of butter, naan and sliced onion beside it",
+      { focal: "45% 55%", note: "The naan and onion beside the pot aren't part of this dish." },
     ),
   },
   {
@@ -496,8 +504,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 2,
     price: 1690,
-    image: placeholder(
-      "Rogan josh: bone-in lamb pieces in a deep red, glossy Kashmiri chili gravy",
+    image: generated(
+      "/food/rogan-josh-ai.jpg",
+      "Rogan josh: bone-in lamb pieces in a glossy deep red gravy in a copper pot, rice behind it",
+      { focal: "55% 55%", note: "The rice behind the pot isn't part of this dish." },
     ),
   },
   {
@@ -554,8 +564,9 @@ export const dishes: Dish[] = [
     diet: ["vegetarian"],
     spice: 2,
     price: 1250,
-    image: placeholder(
-      "Chole bhature: dark spiced chickpea curry with two large puffed fried breads, onion and lemon on the side",
+    image: generated(
+      "/food/chole-bhature-ai.jpg",
+      "Chole bhature: a bowl of spiced chickpea curry with two puffed fried breads, sliced onion and a green chili",
     ),
   },
   {
@@ -618,8 +629,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 1390,
-    image: placeholder(
-      "Malai kofta: golden fried paneer and potato dumplings in a pale orange cashew-cream gravy",
+    image: generated(
+      "/food/malai-kofta-ai.jpg",
+      "Malai kofta: four golden dumplings in a pale orange cream gravy, garnished with cilantro",
+      { focal: "45% 50%" },
     ),
   },
   // ─── Nepal ────────────────────────────────────────────────────────────────
@@ -684,8 +697,9 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 2,
     price: 1290,
-    image: placeholder(
-      "Chicken momo: pleated steamed dumplings on a plate with a bowl of orange tomato-sesame achar",
+    image: generated(
+      "/food/chicken-momo-ai.jpg",
+      "Chicken momo: pleated steamed dumplings on a plate with a small bowl of orange tomato achar",
     ),
   },
   {
@@ -754,8 +768,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "vegan", "gluten-free"],
     spice: 1,
     price: 1350,
-    image: placeholder(
-      "Dal bhat tarkari: a round metal plate of rice with small bowls of lentil soup, potato-cauliflower curry, greens and tomato achar",
+    image: generated(
+      "/food/dal-bhat-ai.jpg",
+      "Dal bhat tarkari: a brass plate of rice with a bowl of lentil soup, potato curry, greens, tomato achar and a papad",
+      { focal: "55% 50%", note: "The papad (crisp lentil wafer) isn't part of our dal bhat." },
     ),
   },
   {
@@ -800,8 +816,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 1190,
-    image: placeholder(
-      "Newari bara: round golden lentil patties, one topped with a cooked egg, beside a smoky tomato achar",
+    image: generated(
+      "/food/newari-bara-ai.jpg",
+      "Newari bara: a dark lentil patty topped with a fried egg, with roasted tomato achar on the side",
+      { focal: "45% 50%" },
     ),
   },
   {
@@ -851,8 +869,9 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 2,
     price: 1250,
-    image: placeholder(
-      "Thukpa: a deep bowl of hand-cut noodles in clear chicken broth with vegetables, scallion and chili",
+    image: generated(
+      "/food/thukpa-ai.jpg",
+      "Thukpa: noodles in clear broth with shredded chicken, spinach, carrot, scallion and chili",
     ),
   },
   {
@@ -909,8 +928,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 1090,
-    image: placeholder(
-      "Sel roti and aloo dum: thin golden rings of fried rice bread beside a bowl of spiced potatoes",
+    image: generated(
+      "/food/sel-roti-ai.jpg",
+      "Sel roti and aloo dum: thick golden fried rings beside a brass bowl of spiced potatoes",
+      { focal: "40% 55%" },
     ),
   },
   {
@@ -950,8 +971,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 1,
     price: 1150,
-    image: placeholder(
-      "Chatamari: a thin, round rice-flour crepe topped with minced chicken, egg, tomato, onion and cilantro",
+    image: generated(
+      "/food/chatamari-ai.jpg",
+      "Chatamari: a thin, round crepe topped with minced meat, a fried egg, tomato, onion, green chili and cilantro",
+      { focal: "40% 50%" },
     ),
   },
   {
@@ -997,8 +1020,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 3,
     price: 1450,
-    image: placeholder(
-      "Chicken choila: pieces of flame-charred chicken tossed with chili, garlic, scallion and timur, beside a mound of beaten rice",
+    image: generated(
+      "/food/chicken-choila-ai.jpg",
+      "Chicken choila: flame-charred chicken pieces tossed with spices, scallion and cilantro in a clay bowl",
+      { focal: "55% 50%" },
     ),
   },
   {
@@ -1025,8 +1050,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "vegan", "gluten-free"],
     spice: 0,
     price: 990,
-    image: placeholder(
-      "Yomari: steamed rice-flour dumplings shaped like a fish, filled with chaku and sesame",
+    image: generated(
+      "/food/yomari-ai.jpg",
+      "Yomari: five white, teardrop-shaped rice-flour dumplings on a brass plate, one cut open to show a dark sesame filling",
+      { focal: "40% 55%" },
     ),
   },
   {
@@ -1070,8 +1097,13 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "vegan", "gluten-free"],
     spice: 2,
     price: 1290,
-    image: placeholder(
-      "Aloo tama: a bowl of brothy curry with potato, bamboo shoot strips and black-eyed peas, topped with cilantro",
+    image: generated(
+      "/food/aloo-tama-ai.jpg",
+      "Aloo tama: a brass bowl of brothy curry with potato, bamboo shoot strips and black-eyed peas, with rice, greens and pickle on the plate",
+      {
+        focal: "35% 55%",
+        note: "The rice, greens and pickle beside the bowl aren't part of this dish.",
+      },
     ),
   },
   {
@@ -1116,8 +1148,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "vegan", "gluten-free"],
     spice: 1,
     price: 1390,
-    image: placeholder(
-      "Gundruk and dhido: a smooth mound of dark buckwheat dhido beside a bowl of sour fermented-greens soup",
+    image: generated(
+      "/food/gundruk-dhido-ai.jpg",
+      "Gundruk and dhido: a mound of dark buckwheat dhido beside a bowl of fermented-greens soup and a small bowl of tomato pickle",
+      { note: "The small bowl of tomato pickle isn't part of this dish." },
     ),
   },
   // ─── Thailand ─────────────────────────────────────────────────────────────
@@ -1214,8 +1248,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 2,
     price: 1450,
-    image: placeholder(
-      "Green curry: chicken and round Thai eggplant in a pale green coconut curry with Thai basil",
+    image: generated(
+      "/food/green-curry-ai.jpg",
+      "Green curry: chicken, round Thai eggplant and pea eggplant in a pale green coconut curry with Thai basil and chili, a bowl of rice beside it",
+      { focal: "60% 55%", note: "The bowl of rice isn't part of this dish." },
     ),
   },
   {
@@ -1271,8 +1307,13 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 3,
     price: 1290,
-    image: placeholder(
-      "Tom yum goong: a bowl of translucent red-orange broth with shrimp, straw mushrooms, lemongrass, lime leaf and chili",
+    image: generated(
+      "/food/tom-yum-ai.jpg",
+      "Tom yum goong: red-orange broth with shrimp, mushrooms, lemongrass, galangal, lime leaf, chili and cilantro",
+      {
+        focal: "40% 55%",
+        note: "The mushrooms shown look like button mushrooms; ours are straw mushrooms.",
+      },
     ),
   },
   {
@@ -1312,8 +1353,9 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 3,
     price: 1350,
-    image: placeholder(
-      "Pad kra pao: minced chicken stir-fried with holy basil and chili over jasmine rice, topped with a crisp fried egg",
+    image: generated(
+      "/food/pad-kra-pao-ai.jpg",
+      "Pad kra pao: minced meat stir-fried with holy basil and chili, with jasmine rice and a crisp fried egg",
     ),
   },
   {
@@ -1373,8 +1415,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 1,
     price: 1550,
-    image: placeholder(
-      "Massaman curry: chunks of braised beef and potato in a rich reddish-brown coconut curry with roasted peanuts",
+    image: generated(
+      "/food/massaman-ai.jpg",
+      "Massaman curry: beef, potato, shallots and roasted peanuts in a reddish-brown coconut curry, a bowl of rice beside it",
+      { focal: "40% 55%", note: "The bowl of rice isn't part of this dish." },
     ),
   },
   {
@@ -1409,8 +1453,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 3,
     price: 1190,
-    image: placeholder(
-      "Som tam: shredded green papaya salad with long beans, cherry tomatoes, dried shrimp and peanuts in a clay mortar",
+    image: generated(
+      "/food/som-tam-ai.jpg",
+      "Som tam: shredded green papaya with long beans, cherry tomatoes, chili, carrot and peanuts, with a lime wedge",
+      { focal: "40% 55%", note: "Our som tam has no carrot; the picture shows some." },
     ),
   },
   {
@@ -1440,8 +1486,9 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "vegan", "gluten-free"],
     spice: 0,
     price: 890,
-    image: placeholder(
-      "Mango sticky rice: sliced ripe mango beside a mound of sticky rice drizzled with coconut cream and toasted mung beans",
+    image: generated(
+      "/food/mango-sticky-rice-ai.jpg",
+      "Mango sticky rice: sliced ripe mango beside a mound of sticky rice with coconut cream and toasted mung beans, on a banana leaf",
     ),
   },
   {
@@ -1477,8 +1524,10 @@ export const dishes: Dish[] = [
     spice: 1,
     price: 1250,
     // The old photo showed plain fried rice with peas and corn, no crab.
-    image: placeholder(
-      "Khao pad pu: jasmine fried rice with egg and crab, cucumber slices, lime and chili fish sauce",
+    image: generated(
+      "/food/khao-pad-ai.jpg",
+      "Khao pad pu: fried rice with egg and crab, cucumber slices, lime and a small bowl of chili fish sauce",
+      { focal: "55% 55%" },
     ),
   },
   {
@@ -1527,8 +1576,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 2,
     price: 1490,
-    image: placeholder(
-      "Panang curry: sliced chicken in a thick red-orange coconut curry topped with shredded makrut lime leaf and red chili",
+    image: generated(
+      "/food/panang-curry-ai.jpg",
+      "Panang curry: sliced chicken in a thick red-orange coconut curry with Thai basil, lime leaf and red chili, beside rice",
+      { note: "The rice isn't part of this dish." },
     ),
   },
   {
@@ -1585,8 +1636,10 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 2,
     price: 1450,
-    image: placeholder(
-      "Khao soi: egg noodles and a chicken drumstick in golden coconut curry broth, crowned with crisp fried noodles, with lime and shallot",
+    image: generated(
+      "/food/khao-soi-ai.jpg",
+      "Khao soi: egg noodles and a chicken drumstick in golden curry broth, topped with crisp fried noodles, with lime, shallot and pickled greens",
+      { focal: "45% 50%" },
     ),
   },
   // ─── Mexico ───────────────────────────────────────────────────────────────
@@ -1647,8 +1700,10 @@ export const dishes: Dish[] = [
     spice: 2,
     price: 1390,
     // The old photo showed chickpea-and-avocado tacos, not pork al pastor.
-    image: placeholder(
-      "Tacos al pastor: corn tortillas with spit-roasted marinated pork, pineapple, onion and cilantro",
+    image: generated(
+      "/food/tacos-al-pastor-ai.jpg",
+      "Tacos al pastor: three corn tortillas with red marinated pork, pineapple, onion and cilantro, with lime and a red salsa",
+      { note: "The salsa shown is red; ours is a green tomatillo salsa." },
     ),
     featured: true,
   },
@@ -1718,8 +1773,13 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 1,
     price: 1650,
-    image: placeholder(
-      "Mole poblano: turkey pieces covered in glossy dark brown mole sauce, sprinkled with toasted sesame seeds",
+    image: generated(
+      "/food/mole-poblano-ai.jpg",
+      "Mole poblano: pieces of poultry covered in dark mole and sesame seeds, beside red rice",
+      {
+        focal: "55% 55%",
+        note: "The red rice isn't part of this dish, and ours is made with bone-in turkey thigh.",
+      },
     ),
   },
   {
@@ -1781,8 +1841,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 1,
     price: 1590,
-    image: placeholder(
-      "Carne asada plate: sliced grilled skirt steak with red rice, pinto beans, salsa roja, grilled spring onions and corn tortillas",
+    image: generated(
+      "/food/carne-asada-ai.jpg",
+      "Carne asada plate: sliced grilled steak with red rice, beans topped with crumbled cheese, salsa roja, grilled spring onions, lime and corn tortillas",
+      { note: "Our beans aren't topped with cheese." },
     ),
   },
   {
@@ -1829,8 +1891,9 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 1,
     price: 1350,
-    image: placeholder(
-      "Enchiladas verdes: rolled corn tortillas filled with chicken under green tomatillo salsa, crema, crumbled cheese and onion",
+    image: generated(
+      "/food/enchiladas-verdes-ai.jpg",
+      "Enchiladas verdes: rolled tortillas filled with chicken under green tomatillo salsa, crema, crumbled cheese, onion and cilantro",
     ),
   },
   {
@@ -1860,8 +1923,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian"],
     spice: 1,
     price: 1450,
-    image: placeholder(
-      "Chiles rellenos: a batter-fried poblano chili stuffed with melting cheese, sitting in a light tomato broth",
+    image: generated(
+      "/food/chiles-rellenos-ai.jpg",
+      "Chiles rellenos: two batter-fried poblano chilies in tomato broth, with rice on the plate",
+      { focal: "40% 55%", note: "The rice isn't part of this dish." },
     ),
   },
   {
@@ -1916,8 +1981,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 2,
     price: 1390,
-    image: placeholder(
-      "Pozole rojo: a bowl of red chili broth with pork and white hominy, with shredded cabbage, sliced radish, oregano and lime",
+    image: generated(
+      "/food/pozole-rojo-ai.jpg",
+      "Pozole rojo: red chili broth with pork and hominy, topped with shredded cabbage, radish and oregano",
+      { focal: "45% 55%" },
     ),
   },
   {
@@ -1993,8 +2060,10 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 1,
     price: 1290,
-    image: placeholder(
-      "Tamales oaxaqueños: flat tamales unwrapped from banana leaves, showing soft masa with chicken and dark mole negro",
+    image: generated(
+      "/food/tamales-ai.jpg",
+      "Tamales oaxaqueños: a tamal unwrapped on banana leaves, showing masa with shredded chicken and dark mole negro",
+      { focal: "55% 55%" },
     ),
   },
   {
@@ -2028,8 +2097,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 0,
     price: 1350,
-    image: placeholder(
-      "Huitlacoche quesadilla: a folded blue-corn tortilla filled with dark huitlacoche and melted Oaxaca cheese",
+    image: generated(
+      "/food/huitlacoche-quesadilla-ai.jpg",
+      "Huitlacoche quesadilla: a folded blue-corn tortilla with dark huitlacoche and melted cheese, with a bowl of green salsa",
+      { focal: "40% 55%", note: "The bowl of green salsa isn't part of this dish." },
     ),
   },
   {
@@ -2074,7 +2145,8 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 2,
     price: 1250,
-    image: placeholder(
+    image: generated(
+      "/food/chilaquiles-ai.jpg",
       "Chilaquiles: tortilla chips in green salsa topped with a fried egg, crema, crumbled cheese, onion and cilantro",
     ),
   },
@@ -2121,8 +2193,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 1,
     price: 990,
-    image: placeholder(
-      "Elote and guacamole: grilled corn on the cob coated with crema, cotija and chili, beside chunky guacamole and tortilla chips",
+    image: generated(
+      "/food/elote-guacamole-ai.jpg",
+      "Elote and guacamole: grilled corn on the cob with crema, cotija and chili, beside a bowl of chunky guacamole and lime wedges",
+      { focal: "45% 55%" },
     ),
   },
   // ─── Italy ────────────────────────────────────────────────────────────────
@@ -2251,6 +2325,7 @@ export const dishes: Dish[] = [
       "/food/lasagna.jpg",
       "A square of baked lasagna with a browned cheese top on tomato sauce, garnished with crisp cured ham, cherry tomatoes and herbs",
       "50% 50%",
+      "The ham garnish isn't in our recipe, and our pasta is green (spinach).",
     ),
   },
   {
@@ -2281,8 +2356,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian"],
     spice: 1,
     price: 1450,
-    image: placeholder(
-      "Cacio e pepe: a twirl of square-cut tonnarelli coated in creamy pecorino sauce with coarse black pepper",
+    image: generated(
+      "/food/cacio-e-pepe-ai.jpg",
+      "Cacio e pepe: long pasta coated in creamy pecorino sauce with coarse black pepper",
+      { focal: "45% 55%" },
     ),
   },
   {
@@ -2333,7 +2410,8 @@ export const dishes: Dish[] = [
     diet: [],
     spice: 0,
     price: 1890,
-    image: placeholder(
+    image: generated(
+      "/food/osso-buco-ai.jpg",
       "Osso buco: a braised cross-cut veal shank with its marrow bone, topped with gremolata, beside golden saffron risotto",
     ),
   },
@@ -2373,8 +2451,10 @@ export const dishes: Dish[] = [
     diet: ["gluten-free"],
     spice: 0,
     price: 1690,
-    image: placeholder(
-      "Risotto alla milanese: creamy golden saffron risotto spread on a plate, finished with grated Parmigiano",
+    image: generated(
+      "/food/risotto-milanese-ai.jpg",
+      "Risotto alla milanese: golden saffron risotto with grated Parmigiano and saffron threads",
+      { focal: "55% 55%" },
     ),
   },
   {
@@ -2413,8 +2493,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian"],
     spice: 0,
     price: 1490,
-    image: placeholder(
-      "Gnocchi al pesto: soft potato gnocchi coated in bright green basil pesto with green beans",
+    image: generated(
+      "/food/gnocchi-pesto-ai.jpg",
+      "Gnocchi al pesto: potato gnocchi in bright green basil pesto with green beans, pine nuts and grated cheese",
+      { focal: "45% 55%" },
     ),
   },
   {
@@ -2455,8 +2537,9 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 0,
     price: 1390,
-    image: placeholder(
-      "Eggplant parmigiana: a baked square of layered fried eggplant, tomato sauce and melted mozzarella, topped with basil",
+    image: generated(
+      "/food/eggplant-parmigiana-ai.jpg",
+      "Eggplant parmigiana: a baked square of layered eggplant, tomato sauce and melted mozzarella, topped with basil",
     ),
   },
   {
@@ -2491,6 +2574,7 @@ export const dishes: Dish[] = [
       "/food/tiramisu.jpg",
       "A square of layered tiramisu dusted with cocoa, topped with pomegranate seeds and a small decorative plaque, on a patterned plate",
       "50% 65%",
+      "The pomegranate garnish isn't in our recipe.",
     ),
   },
   {
@@ -2526,8 +2610,10 @@ export const dishes: Dish[] = [
     diet: ["vegetarian", "gluten-free"],
     spice: 0,
     price: 1250,
-    image: placeholder(
-      "Burrata caprese: a whole burrata split open over sliced ripe tomatoes, with basil leaves and olive oil",
+    image: generated(
+      "/food/burrata-caprese-ai.jpg",
+      "Burrata caprese: a whole burrata over sliced ripe tomatoes with basil, olive oil, salt and pepper",
+      { focal: "55% 55%" },
     ),
   },
 ];

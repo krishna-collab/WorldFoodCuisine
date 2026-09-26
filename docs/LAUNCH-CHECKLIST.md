@@ -70,6 +70,12 @@ See `docs/IMAGE-AUDIT.md`.
 
 - [ ] Photograph your own dishes, starting with the six featured ones and the
       cuisine cover dishes. Add them with `ownPhoto(...)`.
+- [ ] **Replace the 42 AI-generated images before you start delivering.**
+      REDESIGN.md §6 allows AI images only as labeled stand-ins; once you're
+      operating, dish photos must show what customers actually receive. Start
+      with sel roti, whose image doesn't look like real sel roti.
+- [ ] Until then, record which tool made the AI images and confirm its terms
+      allow commercial use.
 - [ ] For the 8 stock photos still in use, confirm the license or replace them.
       Nobody knows where they came from.
 

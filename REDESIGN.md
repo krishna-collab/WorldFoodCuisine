@@ -20,7 +20,8 @@ one pass. Decisions that change the brief below:
   ZIP code; no ZIP is served until a real delivery zone is added. A clearly
   labeled demo mode lets people try the flow. Nothing is sent or charged.
 - **Photos:** see `docs/IMAGE-AUDIT.md`. Only 8 photos match their dish, and
-  they're labeled as representative stock photos. The rest show placeholders.
+  they're labeled as representative stock photos. The other 42 dishes show
+  AI-generated images, labeled as such, until we photograph our own plates.
 - **What's still needed from the business:** `docs/LAUNCH-CHECKLIST.md`.
   **Adding cuisines:** `docs/EXPANSION.md`.
 

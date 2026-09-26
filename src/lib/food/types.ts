@@ -27,15 +27,17 @@ export type RecipePart = {
 };
 
 /**
- * Photo metadata, stored on the dish it shows.
+ * Image metadata, stored on the dish it shows.
  * - `own`: a photo of our own plate of this dish.
  * - `representative`: a stock image of a typical version of the dish, always
  *   labeled on screen and never presented as our plate.
- * - `placeholder`: no accurate photo yet; the UI shows a labeled card.
+ * - `generated`: an AI-generated picture of a typical version of the dish,
+ *   always labeled on screen as AI-generated and never presented as a photo.
+ * - `placeholder`: no accurate image yet; the UI shows a labeled card.
  */
 export type DishImage =
   | {
-      kind: "own" | "representative";
+      kind: "own" | "representative" | "generated";
       src: string;
       alt: string;
       /** CSS object-position, e.g. "50% 40%". */
@@ -43,6 +45,8 @@ export type DishImage =
       source: string;
       license: string;
       review: "needs-review" | "approved";
+      /** Where the image differs from our recipe, shown on the dish page. */
+      note?: string;
     }
   | {
       kind: "placeholder";

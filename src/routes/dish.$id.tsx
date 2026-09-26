@@ -30,8 +30,8 @@ export const Route = createFileRoute("/dish/$id")({
     return pageHead({
       title: `${dish.name} (${dish.localName})`,
       description: dish.story,
-      // Share previews use the brand card: a stock photo there would carry no
-      // "representative photo" label and could pass for our food.
+      // Share previews use the brand card: a stock photo or AI image there would
+      // carry no label and could pass for our food.
       path: `/dish/${dish.id}`,
     });
   },
@@ -134,7 +134,13 @@ function DishPage() {
       {dish.image.kind === "representative" ? (
         <p className="mt-6 text-sm text-subtle">
           About the photo: a stock image of a typical {dish.name}, not a photo of our food. Source
-          and license are still being confirmed.
+          and license are still being confirmed.{dish.image.note ? ` ${dish.image.note}` : ""}
+        </p>
+      ) : null}
+      {dish.image.kind === "generated" ? (
+        <p className="mt-6 text-sm text-subtle">
+          About the image: an AI-generated illustration of a typical {dish.name}, not a photo of our
+          food.{dish.image.note ? ` ${dish.image.note}` : ""}
         </p>
       ) : null}
 

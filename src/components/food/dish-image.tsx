@@ -1,6 +1,6 @@
 import { Camera } from "lucide-react";
 import { cuisineById, localNameLang } from "@/lib/food/data";
-import { imageSrcSet, imageUrl } from "@/lib/food/images";
+import { IMAGE_LABELS, imageSrcSet, imageUrl } from "@/lib/food/images";
 import type { Dish } from "@/lib/food/types";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +19,8 @@ type DishImageProps = {
 /**
  * The one image component for a dish, used on cards, detail pages and the cart
  * so every surface shows the same thing. Stock photos are always labeled as
- * representative; our own photos need no label; dishes without an accurate
- * photo get a labeled placeholder.
+ * representative and AI images as AI-generated; our own photos need no label;
+ * dishes without an accurate image get a labeled placeholder.
  */
 export function DishImage({
   dish,
@@ -68,13 +68,18 @@ export function DishImage({
     );
   }
 
+  const badge = image.kind === "own" ? null : IMAGE_LABELS[image.kind];
+  // AI images say so in the alt text too, so screen readers hear it even
+  // where the visible badge is left off (small thumbnails).
+  const alt = image.kind === "generated" ? `AI-generated illustration. ${image.alt}` : image.alt;
+
   return (
     <div className={cn("relative overflow-hidden bg-surface", className)}>
       <img
         src={imageUrl(image.src, 828)}
         srcSet={imageSrcSet(image.src)}
         sizes={sizes}
-        alt={image.alt}
+        alt={alt}
         width={1200}
         height={900}
         loading={priority ? "eager" : "lazy"}
@@ -83,12 +88,14 @@ export function DishImage({
         className={cn("food-frame size-full object-cover", imgClassName)}
         style={{ objectPosition: image.focal }}
       />
-      {label === "compact" && image.kind === "representative" ? (
+      {label === "compact" && badge ? (
         <span
           className="absolute bottom-2 left-2 rounded-full bg-bg/80 px-2 py-0.5 text-[11px] font-medium text-fg/90 backdrop-blur-sm"
-          title="A stock photo of a typical version of this dish. It is not a photo of our food."
+          title={badge.title}
+          // The alt text already announces AI images; don't say it twice.
+          aria-hidden={image.kind === "generated" ? true : undefined}
         >
-          Representative photo
+          {badge.text}
         </span>
       ) : null}
     </div>

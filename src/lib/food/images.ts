@@ -5,7 +5,12 @@ const INHERITED_SOURCE = "Came with the site template; original photographer and
 const INHERITED_LICENSE = "Unknown. Confirm the license or replace the photo before relying on it";
 
 /** A stock photo of a typical version of the dish. Always labeled on screen. */
-export function representative(src: string, alt: string, focal = "50% 50%"): DishImage {
+export function representative(
+  src: string,
+  alt: string,
+  focal = "50% 50%",
+  note?: string,
+): DishImage {
   return {
     kind: "representative",
     src,
@@ -14,8 +19,54 @@ export function representative(src: string, alt: string, focal = "50% 50%"): Dis
     source: INHERITED_SOURCE,
     license: INHERITED_LICENSE,
     review: "needs-review",
+    ...(note ? { note } : {}),
   };
 }
+
+/** AI images the owner supplied in September 2026. The generator wasn't recorded. */
+const GENERATED_SOURCE =
+  "AI-generated image supplied by the owner, September 2026. The tool that made it isn't recorded yet";
+const GENERATED_LICENSE =
+  "Set by the image generator's terms. Record the tool and confirm it allows commercial use before launch";
+
+/**
+ * An AI-generated illustration of a typical version of the dish. Always labeled
+ * "AI illustration" on screen, never presented as a photo of our food, and
+ * never used in share previews. A stand-in until we photograph our own plate
+ * (REDESIGN.md §6). `note` says where the picture differs from our recipe.
+ */
+export function generated(
+  src: string,
+  alt: string,
+  { focal = "50% 50%", note }: { focal?: string; note?: string } = {},
+): DishImage {
+  return {
+    kind: "generated",
+    src,
+    alt,
+    focal,
+    source: GENERATED_SOURCE,
+    license: GENERATED_LICENSE,
+    review: "needs-review",
+    ...(note ? { note } : {}),
+  };
+}
+
+/**
+ * On-screen labels for images that aren't photos of our food. Every kind
+ * except `own` must have one; the menu tests check this.
+ */
+export const IMAGE_LABELS = {
+  representative: {
+    text: "Representative photo",
+    title: "A stock photo of a typical version of this dish. It is not a photo of our food.",
+  },
+  generated: {
+    text: "AI illustration",
+    title:
+      "An AI-generated illustration of a typical version of this dish. It is not a photo of our food.",
+  },
+} as const;
 
 /**
  * A photo of our own plate of this dish. `source` says who took it and when,

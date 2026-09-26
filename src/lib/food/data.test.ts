@@ -19,6 +19,7 @@ import {
   normalize,
   searchDishes,
 } from "./data.ts";
+import { IMAGE_LABELS } from "./images.ts";
 import type { Allergen, Dish } from "./types.ts";
 
 const root = new URL("../../../", import.meta.url);
@@ -148,6 +149,26 @@ test("photos: real metadata, files that exist, and no photo reused across dishes
     const other = seen.get(bytes);
     assert.equal(other, undefined, `${d.id} reuses the photo of ${other}`);
     seen.set(bytes, d.id);
+  }
+});
+
+test("every image that isn't our own food carries an on-screen label", () => {
+  for (const d of dishes) {
+    const { kind } = d.image;
+    if (kind === "own" || kind === "placeholder") continue;
+    const label = IMAGE_LABELS[kind];
+    assert.ok(label?.text.trim() && label.title.includes("not a photo of our food"), `${d.id}`);
+  }
+});
+
+test("AI images are named, sourced and noted as AI images", () => {
+  for (const d of dishes) {
+    const image = d.image;
+    if (image.kind === "placeholder") continue;
+    const named = new RegExp(`^/food/${d.id}-ai\\.(jpg|jpeg|png|webp|avif)$`).test(image.src);
+    assert.equal(named, image.kind === "generated", `${d.id}: only AI images use -ai files`);
+    if (image.kind === "generated") assert.match(image.source, /AI-generated/, d.id);
+    if (image.note) assert.match(image.note, /^[A-Z].*\.$/, `${d.id}: note is a sentence`);
   }
 });
 

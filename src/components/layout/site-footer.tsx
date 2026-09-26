@@ -53,9 +53,9 @@ export function SiteFooter() {
             </li>
           </ul>
           <p className="mt-6 text-sm leading-relaxed text-subtle">
-            We’re not delivering yet. Photos marked “Representative photo” are stock images of a
-            typical version of a dish, not photos of our food. “Photo coming soon” means we haven’t
-            photographed that dish yet.
+            We’re not delivering yet. Images marked “Representative photo” are stock photos of a
+            typical version of a dish, and images marked “AI illustration” were generated with AI.
+            Neither shows our food.
           </p>
         </nav>
       </div>

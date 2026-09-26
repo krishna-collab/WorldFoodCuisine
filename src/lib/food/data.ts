@@ -23,7 +23,7 @@ export function featuredDishes() {
   return dishes.filter((d) => d.featured);
 }
 
-/** Dishes with an accurate representative photo, for places where imagery leads. */
+/** Dishes with an image (photo or labeled AI image), for places where imagery leads. */
 export function photographedDishes() {
   return dishes.filter((d) => d.image.kind !== "placeholder");
 }
