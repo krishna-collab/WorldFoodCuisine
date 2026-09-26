@@ -16,6 +16,7 @@ import { Route as IngredientsRouteImport } from './routes/ingredients'
 import { Route as KitchensRouteImport } from './routes/kitchens'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PartnersRouteImport } from './routes/partners'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as TraceRouteImport } from './routes/trace'
 import { Route as DishIdRouteImport } from './routes/dish.$id'
 import { Route as MenuCuisineRouteImport } from './routes/menu.$cuisine'
@@ -56,6 +57,11 @@ const PartnersRoute = PartnersRouteImport.update({
   path: '/partners',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TraceRoute = TraceRouteImport.update({
   id: '/trace',
   path: '/trace',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
+  '/saved': typeof SavedRoute
   '/trace': typeof TraceRoute
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
+  '/saved': typeof SavedRoute
   '/trace': typeof TraceRoute
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/kitchens': typeof KitchensRoute
   '/menu': typeof MenuRouteWithChildren
   '/partners': typeof PartnersRoute
+  '/saved': typeof SavedRoute
   '/trace': typeof TraceRoute
   '/dish/$id': typeof DishIdRoute
   '/menu/$cuisine': typeof MenuCuisineRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/kitchens'
     | '/menu'
     | '/partners'
+    | '/saved'
     | '/trace'
     | '/dish/$id'
     | '/menu/$cuisine'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/kitchens'
     | '/menu'
     | '/partners'
+    | '/saved'
     | '/trace'
     | '/dish/$id'
     | '/menu/$cuisine'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/kitchens'
     | '/menu'
     | '/partners'
+    | '/saved'
     | '/trace'
     | '/dish/$id'
     | '/menu/$cuisine'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   KitchensRoute: typeof KitchensRoute
   MenuRoute: typeof MenuRouteWithChildren
   PartnersRoute: typeof PartnersRoute
+  SavedRoute: typeof SavedRoute
   TraceRoute: typeof TraceRoute
   DishIdRoute: typeof DishIdRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -223,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trace': {
       id: '/trace'
       path: '/trace'
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   KitchensRoute: KitchensRoute,
   MenuRoute: MenuRouteWithChildren,
   PartnersRoute: PartnersRoute,
+  SavedRoute: SavedRoute,
   TraceRoute: TraceRoute,
   DishIdRoute: DishIdRoute,
   OrderIdRoute: OrderIdRoute,

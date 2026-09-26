@@ -19,6 +19,8 @@ import {
   normalize,
   searchDishes,
 } from "./data.ts";
+import { editorial } from "./editorial.ts";
+import { facetCount, filterDishes, parseFilters, validateMenuSearch } from "./filters.ts";
 import { IMAGE_LABELS } from "./images.ts";
 import type { Allergen, Dish } from "./types.ts";
 
@@ -170,6 +172,63 @@ test("AI images are named, sourced and noted as AI images", () => {
     if (image.kind === "generated") assert.match(image.source, /AI-generated/, d.id);
     if (image.note) assert.match(image.note, /^[A-Z].*\.$/, `${d.id}: note is a sentence`);
   }
+});
+
+test("every dish has editorial copy: a short flavor line and flavor tags", () => {
+  for (const d of dishes) {
+    assert.ok(editorial[d.id], `${d.id} has an editorial entry`);
+    assert.ok(d.flavor.length > 20 && d.flavor.length <= 80, `${d.id} flavor line is ${d.flavor.length} chars`);
+    assert.ok(!d.flavor.endsWith("."), `${d.id}: no full stop on the flavor line (pages add it)`);
+    assert.ok(d.tastes.length >= 1 && d.tastes.length <= 3, `${d.id} has 1 to 3 flavor tags`);
+    assert.ok(d.content.ingredients.source && d.content.allergens.source, `${d.id} content sources`);
+  }
+  assert.equal(Object.keys(editorial).length, dishes.length, "no editorial entries for missing dishes");
+});
+
+test("menu filters: unknown values are dropped, groups combine, counts add up", () => {
+  const nobody = { orderable: () => false };
+  const everyone = { orderable: () => true };
+  assert.deepEqual(validateMenuSearch({ cuisine: "nepal,atlantis", heat: "7", taste: "smoky", sort: "menu" }), {
+    q: undefined,
+    cuisine: "nepal",
+    taste: "smoky",
+    diet: undefined,
+    heat: undefined,
+    available: undefined,
+    collection: undefined,
+    sort: undefined,
+  });
+
+  assert.equal(filterDishes(parseFilters({ cuisine: "nepal" }), nobody).length, 10);
+  const veganPair = filterDishes(parseFilters({ cuisine: "nepal,italy", diet: "vegan" }), nobody);
+  assert.ok(veganPair.length > 0);
+  for (const { dish } of veganPair) {
+    assert.ok(["nepal", "italy"].includes(dish.cuisine) && dish.diet.includes("vegan"), dish.id);
+  }
+  // Diets must all hold; cuisines and flavors are either-or.
+  for (const { dish } of filterDishes(parseFilters({ diet: "vegetarian,gluten-free" }), nobody)) {
+    assert.ok(dish.diet.includes("vegetarian") && dish.diet.includes("gluten-free"), dish.id);
+  }
+  for (const { dish } of filterDishes(parseFilters({ heat: 0 }), nobody)) assert.equal(dish.spice, 0, dish.id);
+  // "On today's menu" depends on the visitor's kitchen.
+  assert.equal(validateMenuSearch({ available: 1 }).available, true);
+  assert.equal(validateMenuSearch({ available: "no" }).available, undefined);
+  assert.equal(filterDishes(parseFilters({ available: true }), nobody).length, 0, "no kitchen, nothing on");
+  assert.equal(filterDishes(parseFilters({ available: true }), everyone).length, dishes.length);
+  // Lowest price first uses the kitchen's prices; without a kitchen it keeps menu order.
+  const byPrice = filterDishes(parseFilters({ sort: "price" }), { ...everyone, price: (d) => d.price });
+  for (let i = 1; i < byPrice.length; i++) {
+    assert.ok(byPrice[i - 1]!.dish.price <= byPrice[i]!.dish.price, "sorted by price");
+  }
+  assert.deepEqual(
+    filterDishes(parseFilters({ sort: "price" }), nobody).map((r) => r.dish.id),
+    dishes.map((d) => d.id),
+  );
+
+  // A chip's count ignores its own group: picking India still shows Nepal's 10.
+  const india = parseFilters({ cuisine: "india" });
+  assert.equal(facetCount(india, nobody, "cuisine", (d) => d.cuisine === "nepal"), 10);
+  assert.ok(searchDishes("oaxaquenos").some((r) => r.dish.id === "tamales"), "accents are optional");
 });
 
 test("the image audit covers every dish", () => {

@@ -21,7 +21,7 @@ export type Allergen =
 export type Course = "main" | "rice" | "noodles" | "bread" | "small-plate" | "soup" | "dessert";
 
 /** One component of a dish (dough, filling, sauce, side...) and what it's made of. */
-export type RecipePart = {
+export type DishPart = {
   label: string;
   items: string[];
 };
@@ -54,7 +54,12 @@ export type DishImage =
       review: "awaiting-photo";
     };
 
-export type Dish = {
+/**
+ * The menu record for a dish (src/lib/food/dishes.ts): what it is, what it's
+ * made of and what it contains. Every kitchen cooks from the same record;
+ * what a kitchen has on today and its price live with the kitchen (zones.ts).
+ */
+export type DishRecord = {
   id: string;
   cuisine: CuisineId;
   name: string;
@@ -66,17 +71,54 @@ export type Dish = {
   /** One or two editorial sentences on origin and preparation. */
   story: string;
   /** What the dish is made of, component by component. */
-  parts: RecipePart[];
+  parts: DishPart[];
   /** Fats the dish is cooked in (olive oil, butter, ghee). */
   cookedIn: string[];
   allergens: Allergen[];
   diet: DietTag[];
   spice: 0 | 1 | 2 | 3;
-  /** Planned price in US cents. Only shown where a delivery zone is active. */
+  /** Planned base price in US cents. Only shown where a kitchen (or the demo) serves the ZIP. */
   price: number;
   image: DishImage;
   featured?: boolean;
 };
+
+/** Flavor notes for browsing. Editorial: read from the ingredient list. */
+export type Taste = "creamy" | "tangy" | "smoky" | "herby" | "sweet" | "earthy" | "rich" | "crisp";
+
+/**
+ * Editorial layer on top of the menu record (src/lib/food/editorial.ts): the
+ * one-line flavor description on cards and the flavor filters.
+ */
+export type DishEditorial = {
+  /** One line on what it tastes like, for cards. Under 80 characters. */
+  flavor: string;
+  tastes: Taste[];
+};
+
+/** Where a piece of food content came from and who has checked it. */
+export type ContentStatus = "draft" | "reviewed" | "verified";
+export type ContentRecord = {
+  status: ContentStatus;
+  source: string;
+  /** Who checked it, e.g. "Kitchen lead, Mission St." Required once reviewed or verified. */
+  checkedBy?: string;
+  /** ISO date of the check. */
+  checkedOn?: string;
+};
+
+export type DishContent = {
+  ingredients: ContentRecord;
+  allergens: ContentRecord;
+  story: ContentRecord;
+  editorial: ContentRecord;
+};
+
+/** A dish as the app uses it: menu record + editorial layer + content status. */
+export type Dish = DishRecord &
+  DishEditorial & {
+    content: DishContent;
+  };
 
 export type Cuisine = {
   id: CuisineId;
@@ -103,8 +145,12 @@ export type Collection = {
 };
 
 export type CartItem = {
+  /** dishId plus chosen options, so the same dish with different choices is two lines. */
+  key: string;
   dishId: string;
   qty: number;
+  /** Option group id → choice id, from the delivery zone's menu. */
+  options?: Record<string, string>;
 };
 
 export type DemoOrder = {
@@ -117,5 +163,6 @@ export type DemoOrder = {
   subtotal: number;
   delivery: number;
   tax: number;
+  tip: number;
   total: number;
 };

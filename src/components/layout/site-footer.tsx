@@ -1,68 +1,77 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Wordmark } from "@/components/brand/logo";
-import { cuisines, dishes } from "@/lib/food/data";
-import { KITCHEN_PROMISE } from "@/lib/site";
+import { InstallButton } from "@/components/pwa/install";
+import { cuisines } from "@/lib/food/data";
+
+const linkClass =
+  "inline-flex min-h-10 items-center text-[0.9375rem] font-medium text-fg hover:text-accent";
+
+function Column({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <nav aria-label={title}>
+      <h2 className="eyebrow font-sans text-subtle">{title}</h2>
+      <ul className="mt-3 space-y-1">{children}</ul>
+    </nav>
+  );
+}
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface pb-safe">
-      <div className="mx-auto grid max-w-7xl gap-10 2xl:max-w-[1536px] px-4 py-14 sm:px-6 md:grid-cols-12">
-        <div className="md:col-span-5">
+    <footer className="mt-24 border-t border-border bg-sunken">
+      <div className="gutter mx-auto grid max-w-[90rem] gap-10 py-14 sm:grid-cols-3 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="max-w-sm sm:col-span-3 md:col-span-1">
           <Wordmark />
-          <ul className="mt-5 space-y-2 text-sm leading-relaxed text-muted">
-            {KITCHEN_PROMISE.map((p) => (
-              <li key={p.title}>
-                <span className="font-medium text-fg">{p.title}.</span> {p.body}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <nav aria-label="Menu" className="md:col-span-3">
-          <p className="text-sm font-medium text-fg">Explore</p>
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>
-              <Link to="/menu" className="text-muted hover:text-fg">
-                All {dishes.length} dishes
-              </Link>
-            </li>
-            {cuisines.map((c) => (
-              <li key={c.id}>
-                <Link
-                  to="/menu/$cuisine"
-                  params={{ cuisine: c.id }}
-                  className="text-muted hover:text-fg"
-                >
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <nav aria-label="About" className="md:col-span-4">
-          <p className="text-sm font-medium text-fg">Ordering</p>
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>
-              <Link to="/delivery" className="text-muted hover:text-fg">
-                Order near me
-              </Link>
-            </li>
-            <li>
-              <Link to="/ingredients" className="text-muted hover:text-fg">
-                What’s in our food
-              </Link>
-            </li>
-          </ul>
-          <p className="mt-6 text-sm leading-relaxed text-subtle">
-            We’re not delivering yet. Images marked “Representative photo” are stock photos of a
-            typical version of a dish, and images marked “AI illustration” were generated with AI.
-            Neither shows our food.
+          <p className="mt-4 text-sm leading-relaxed text-muted">
+            Dishes from five cuisines to start, each with its story and every ingredient listed,
+            cooked to order in delivery-only kitchens. No dining rooms: we bring it to you.
           </p>
-        </nav>
+          <InstallButton className="mt-5" />
+        </div>
+        <Column title="Menu">
+          <li>
+            <Link to="/menu" className={linkClass}>
+              All dishes
+            </Link>
+          </li>
+          {cuisines.map((c) => (
+            <li key={c.id}>
+              <Link to="/menu/$cuisine" params={{ cuisine: c.id }} className={linkClass}>
+                {c.name}
+              </Link>
+            </li>
+          ))}
+        </Column>
+        <Column title="Order">
+          <li>
+            <Link to="/delivery" className={linkClass}>
+              Locations
+            </Link>
+          </li>
+          <li>
+            <Link to="/saved" className={linkClass}>
+              Saved dishes
+            </Link>
+          </li>
+        </Column>
+        <Column title="About the food">
+          <li>
+            <Link to="/ingredients" className={linkClass}>
+              What’s in our food
+            </Link>
+          </li>
+        </Column>
       </div>
       <div className="border-t border-border">
-        <p className="mx-auto max-w-7xl px-4 py-6 2xl:max-w-[1536px] text-xs text-subtle sm:px-6">
-          © {new Date().getFullYear()} WorldFoodCuisine
-        </p>
+        <div className="gutter mx-auto flex max-w-[90rem] flex-col gap-2 py-6 text-xs leading-relaxed text-subtle md:flex-row md:justify-between md:gap-8">
+          <p className="max-w-3xl">
+            We’re not delivering yet; ordering on this site is a demo. Images marked
+            “Representative photo” are stock photos and images marked “AI illustration” were
+            generated with AI. Neither shows our food. Ingredients and allergens are drafts until a
+            kitchen confirms them.
+          </p>
+          <p className="shrink-0">© {new Date().getFullYear()} WorldFoodCuisine</p>
+        </div>
       </div>
     </footer>
   );

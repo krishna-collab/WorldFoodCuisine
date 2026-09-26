@@ -1,60 +1,44 @@
-import { MapPin, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Dish } from "@/lib/food/types";
+import { defaultOptions, menuStatus, unitPrice } from "@/lib/ordering/zones";
 import { useCart } from "@/lib/store/cart";
-import { useAreaStatus, useDeliveryArea } from "@/lib/store/delivery-area";
+import { useAreaStatus } from "@/lib/store/delivery-area";
 import { cn, formatPrice } from "@/lib/utils";
-
-type AddButtonProps = {
-  dish: Dish;
-  className?: string;
-  size?: "sm" | "md" | "lg";
-  /** Show the price inside the button (dish page). */
-  withPrice?: boolean;
-};
+import { toastAdded } from "./toast-added";
 
 /**
- * Ordering starts from a ZIP code. Until the visitor has one, the button asks
- * for it; where nobody delivers yet it says so instead of pretending to add.
+ * One-tap add on dish cards. Only shown where a kitchen (or the demo) serves
+ * the visitor's ZIP code and the dish is on today's menu; otherwise the card
+ * stays about the food, and the dish page handles location.
  */
-export function AddButton({ dish, className, size = "sm", withPrice = false }: AddButtonProps) {
+export function QuickAdd({ dish, className }: { dish: Dish; className?: string }) {
   const area = useAreaStatus();
   const add = useCart((s) => s.add);
-  const openDialog = useDeliveryArea((s) => s.openDialog);
-
-  if (area.kind === "served") {
-    return (
-      <Button
-        size={size}
-        className={cn("min-w-11 whitespace-nowrap", className)}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          add(dish.id);
-          toast.success(`${dish.name} added${area.zone.demo ? " (demo)" : ""}`);
-        }}
-      >
-        <Plus className="size-4" strokeWidth={2} aria-hidden="true" />
-        {withPrice ? `Add · ${formatPrice(dish.price)}` : "Add"}
-        <span className="sr-only"> {dish.name}</span>
-      </Button>
-    );
+  if (area.kind !== "served") return null;
+  const status = menuStatus(dish, area.zone);
+  if (!status.available) {
+    return <p className={cn("text-xs font-semibold text-subtle", className)}>{status.reason}</p>;
   }
-
+  const options = defaultOptions(dish, area.zone);
+  const price = unitPrice(dish, area.zone, options);
   return (
     <Button
-      size={size}
-      variant="secondary"
-      className={cn("min-w-11 whitespace-nowrap", className)}
+      size="sm"
+      variant="clay"
+      className={cn("relative z-10", className)}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        openDialog();
+        add(dish.id, options);
+        toastAdded(`${dish.name} added${area.zone.demo ? " (demo)" : ""}`);
       }}
     >
-      <MapPin className="size-4" aria-hidden="true" />
-      {area.kind === "unserved" ? `Not in ${area.postalCode} yet` : "Check delivery"}
+      <Plus className="size-4" strokeWidth={2.5} aria-hidden="true" />
+      <span className="nums">{formatPrice(price)}</span>
+      <span className="sr-only">
+        Add {dish.name} to your bag{area.zone.demo ? " (demo price)" : ""}
+      </span>
     </Button>
   );
 }
@@ -64,9 +48,9 @@ export function DishPrice({ dish, className }: { dish: Dish; className?: string 
   const area = useAreaStatus();
   if (area.kind !== "served") return null;
   return (
-    <p className={cn("shrink-0 font-medium tabular-nums text-fg", className)}>
-      {formatPrice(dish.price)}
-      {area.zone.demo ? <span className="ml-1 text-xs font-normal text-warn-fg">demo</span> : null}
+    <p className={cn("nums shrink-0 font-semibold text-fg", className)}>
+      {formatPrice(unitPrice(dish, area.zone, defaultOptions(dish, area.zone)))}
+      {area.zone.demo ? <span className="ml-1 text-xs font-medium text-warn-fg">demo</span> : null}
     </p>
   );
 }

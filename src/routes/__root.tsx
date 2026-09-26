@@ -26,11 +26,13 @@ export const Route = createRootRoute({
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: SHARE_IMAGE_ALT },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#09090b" },
-      { name: "color-scheme", content: "dark" },
+      // Browser chrome matches the page: paper in light mode, charcoal in dark.
+      { name: "theme-color", content: "#f7f2ea", media: "(prefers-color-scheme: light)" },
+      { name: "theme-color", content: "#15120e", media: "(prefers-color-scheme: dark)" },
+      { name: "color-scheme", content: "light dark" },
       // Home-screen label on iPhone; matches the manifest short_name so it isn't cut off.
       { name: "apple-mobile-web-app-title", content: "WorldFood" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -43,7 +45,7 @@ export const Route = createRootRoute({
       },
       {
         rel: "preload",
-        href: "/fonts/syne-latin-wght-normal.woff2",
+        href: "/fonts/fraunces-latin-opsz-normal.woff2",
         as: "font",
         type: "font/woff2",
         crossOrigin: "anonymous",
@@ -77,7 +79,7 @@ export const Route = createRootRoute({
           <AppShell>
             <Outlet />
           </AppShell>
-          <Toaster theme="dark" position="bottom-center" />
+          <Toaster theme="system" position="bottom-center" richColors={false} toastOptions={{ className: "font-sans" }} />
           <ServiceWorkerRegistration />
         </AuthProvider>
         <Scripts />

@@ -1,6 +1,6 @@
 /**
- * Ordering rules: ZIP parsing, which areas are served, opening hours,
- * delivery windows and the price breakdown.
+ * Ordering rules: ZIP parsing, which kitchen serves a ZIP code, each
+ * kitchen's hours, menu and prices, delivery windows and the price breakdown.
  *
  * Run: npm run test:menu
  */
@@ -8,18 +8,26 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   areaStatus,
-  DEMO_ZONE,
+  defaultOptions,
+  DEMO_EAST,
+  DEMO_KITCHENS,
+  DEMO_WEST,
   deliveryWindows,
+  describeOptions,
   hoursLabel,
   isOpenAt,
   LIVE_ZONES,
+  menuStatus,
   normalizePostalCode,
+  optionGroupsFor,
   priceSummary,
   timeZoneName,
+  unitPrice,
   zoneFor,
 } from "./zones.ts";
 
-// DEMO_ZONE runs 11:00–21:30 in Los Angeles. September is PDT (UTC-7).
+// DEMO_WEST runs 11:00–21:30 in Los Angeles. September is PDT (UTC-7).
+const DEMO_ZONE = DEMO_WEST;
 const la = (hhmm: string, day = "2026-09-24") => new Date(`${day}T${hhmm}:00-07:00`);
 
 test("ZIP codes: five digits or ZIP+4, nothing else", () => {
@@ -41,14 +49,32 @@ test("without demo mode, an area is only served by a real zone", () => {
   }
 });
 
-test("demo mode serves any ZIP from the clearly labeled demo zone", () => {
-  const status = areaStatus("95112", true);
-  assert.equal(status.kind, "served");
-  if (status.kind === "served") {
-    assert.equal(status.zone.demo, true);
-    assert.equal(status.zone.label, "Demo area");
+test("demo mode: every ZIP gets one of two clearly labeled demo kitchens", () => {
+  const west = areaStatus("95112", true);
+  const east = areaStatus("10001", true);
+  assert.equal(west.kind === "served" && west.zone.id, "demo-west");
+  assert.equal(east.kind === "served" && east.zone.id, "demo-east");
+  assert.equal(zoneFor("80202", true)?.id, "demo-west");
+  assert.equal(zoneFor("60601", true)?.id, "demo-east");
+  for (const zone of DEMO_KITCHENS) {
+    assert.equal(zone.demo, true, zone.id);
+    assert.match(zone.label, /^Demo /, zone.id);
   }
   if (LIVE_ZONES.length === 0) assert.equal(zoneFor("00000", false), null);
+});
+
+test("kitchens differ: menu for the day, prices, hours and fees", () => {
+  const momo = { id: "chicken-momo", spice: 2, price: 1290 };
+  const mole = { id: "mole-poblano", spice: 2, price: 1900 };
+  const ossoBuco = { id: "osso-buco", spice: 0, price: 2800 };
+  assert.equal(unitPrice(momo, DEMO_WEST), 1290);
+  assert.equal(unitPrice(momo, DEMO_EAST), 1350);
+  assert.equal(menuStatus(mole, DEMO_WEST).available, true);
+  assert.equal(menuStatus(mole, DEMO_EAST).available, false);
+  assert.equal(menuStatus(ossoBuco, DEMO_WEST).available, false);
+  assert.equal(menuStatus(ossoBuco, DEMO_EAST).available, true);
+  assert.notEqual(DEMO_WEST.timeZone, DEMO_EAST.timeZone);
+  assert.notEqual(DEMO_WEST.deliveryFee, DEMO_EAST.deliveryFee);
 });
 
 test("real zones carry real data: exact ZIP codes, hours, fees and tax", () => {
@@ -101,9 +127,40 @@ test("price summary: delivery fee, free-delivery threshold and tax", () => {
     subtotal: 2000,
     delivery: 299,
     tax: 180,
+    tip: 0,
     total: 2479,
   });
   assert.equal(priceSummary(3500, DEMO_ZONE).delivery, 0);
-  assert.deepEqual(priceSummary(0, DEMO_ZONE), { subtotal: 0, delivery: 0, tax: 0, total: 0 });
+  assert.deepEqual(priceSummary(0, DEMO_ZONE), {
+    subtotal: 0,
+    delivery: 0,
+    tax: 0,
+    tip: 0,
+    total: 0,
+  });
   assert.equal(priceSummary(1999, DEMO_ZONE).tax, 180);
+});
+
+test("tips are a percent of the subtotal and part of the total", () => {
+  const withTip = priceSummary(2000, DEMO_ZONE, 15);
+  assert.equal(withTip.tip, 300);
+  assert.equal(withTip.total, 2000 + 299 + 180 + 300);
+  assert.ok(DEMO_ZONE.tipPercents?.includes(0), "no tip is always a choice");
+});
+
+test("menu availability and options come from the zone", () => {
+  const hot = { id: "tikka-masala", spice: 2, price: 1500 };
+  const mild = { id: "butter-chicken", spice: 1, price: 1500 };
+  assert.deepEqual(menuStatus(hot, DEMO_ZONE), { available: true });
+  const gone = menuStatus({ id: "osso-buco", spice: 0, price: 2800 }, DEMO_ZONE);
+  assert.equal(gone.available, false);
+  assert.deepEqual(
+    optionGroupsFor(hot, DEMO_ZONE).map((g) => g.id),
+    ["heat"],
+  );
+  assert.deepEqual(optionGroupsFor(mild, DEMO_ZONE), []);
+  assert.deepEqual(defaultOptions(hot, DEMO_ZONE), { heat: "as-written" });
+  assert.equal(unitPrice(hot, DEMO_ZONE, { heat: "milder" }), 1500);
+  assert.deepEqual(describeOptions(hot, DEMO_ZONE, { heat: "as-written" }), []);
+  assert.deepEqual(describeOptions(hot, DEMO_ZONE, { heat: "milder" }), ["Heat: Milder"]);
 });

@@ -35,6 +35,28 @@ that had placeholders. Each was checked by eye against its recipe; see
   a typographic card with no food photos. Dish pages don't use stock photos or
   AI images as share images, because a link preview can't show their label.
 
+## Second look at the 8 stock photos (25 September 2026)
+
+Checked again at the crops the redesigned pages use:
+
+- **Lasagna** and **tiramisu** are portrait photos (1400 × 1867 px) shown in
+  landscape frames, so every layout crops them hard. Their focal points keep
+  the food in frame, but replace these two first.
+- **Tiramisu** also shows someone's sleeve and arm at the edge of the frame,
+  and a small plaque on the cake with writing on it (possibly a café's name).
+- **Chicken biryani** and **masala dosa** have the very even lighting and
+  styling common in AI-generated food images. We can't tell for sure. If
+  either turns out to be AI-made, change it to `generated(...)` so it's labeled
+  "AI illustration", or replace it.
+- Butter chicken, pad thai, margherita and carbonara still match their dishes.
+
+## No photo catalog
+
+The 42 AI images arrived as JPEG files only, with no catalog: no prompts, tool
+name, dates or license terms. Everything recorded here comes from looking at
+each image. If a catalog exists, keep it next to this file and record the tool
+and its commercial-use terms (see `docs/LAUNCH-CHECKLIST.md`, Photos).
+
 ## How photos are stored
 
 Each dish's `image` field holds the photo and its metadata (`src/lib/food/types.ts`):

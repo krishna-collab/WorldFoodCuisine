@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { MapPin, X } from "lucide-react";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,15 @@ export function LocationDialog() {
   const postalCode = useDeliveryArea((s) => s.postalCode);
   const demo = useDeliveryArea((s) => s.demo);
   const setPostalCode = useDeliveryArea((s) => s.setPostalCode);
+  const setDemo = useDeliveryArea((s) => s.setDemo);
   const ref = useRef<HTMLDialogElement>(null);
   const inputId = useId();
   const errorId = useId();
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [checked, setChecked] = useState<string | null>(null);
+  // Opened from a dish page: after the check, go back to ordering that dish.
+  const onDish = useRouterState({ select: (s) => s.location.pathname.startsWith("/dish/") });
 
   useEffect(() => {
     const dialog = ref.current;
@@ -62,17 +65,17 @@ export function LocationDialog() {
       ref={ref}
       onClose={closeDialog}
       aria-labelledby={`${inputId}-title`}
-      className="m-auto w-[min(100%-2rem,28rem)] rounded-2xl bg-surface p-0 text-fg shadow-[var(--shadow-border)] backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(100%-2rem,28rem)] rounded-2xl bg-surface p-0 text-fg shadow-[var(--shadow-raised)] backdrop:backdrop-blur-sm"
     >
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
-          <h2 id={`${inputId}-title`} className="font-display text-xl font-semibold tracking-tight">
-            Order near me
+          <h2 id={`${inputId}-title`} className="text-display-s">
+            Find your kitchen
           </h2>
           <button
             type="button"
             onClick={closeDialog}
-            className="-m-2 flex size-11 items-center justify-center rounded-md text-muted hover:text-fg"
+            className="-m-2 flex size-11 items-center justify-center rounded-full text-muted hover:bg-sunken hover:text-fg"
             aria-label="Close"
           >
             <X className="size-5" aria-hidden="true" />
@@ -80,9 +83,15 @@ export function LocationDialog() {
         </div>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           {ORDERING_LIVE
-            ? "Enter your ZIP code to see what we can deliver, with prices, fees and delivery times for your area."
-            : "We’re not delivering anywhere yet. Enter your ZIP code and we’ll tell you honestly whether we reach you."}
+            ? "Each WorldFoodCuisine kitchen delivers to its own area, with its own menu for the day. Enter your ZIP code to find yours."
+            : "No WorldFoodCuisine kitchen is open yet. Enter your ZIP code and we’ll tell you honestly whether one delivers to you."}
         </p>
+        {demo ? (
+          <p className="mt-2 rounded-lg bg-warn-bg px-3 py-2 text-sm leading-relaxed text-warn-fg">
+            Demo mode: ZIP codes starting with 8 or 9 go to Demo kitchen West, all others to Demo
+            kitchen East. Their menus, prices, hours and fees differ.
+          </p>
+        ) : null}
 
         <form onSubmit={onSubmit} className="mt-5" noValidate>
           <Label htmlFor={inputId}>ZIP code</Label>
@@ -100,27 +109,25 @@ export function LocationDialog() {
               aria-describedby={error ? errorId : undefined}
               autoFocus
             />
-            <Button type="submit" size="lg" className="shrink-0">
+            <Button type="submit" size="lg" variant="clay" className="shrink-0">
               Check
             </Button>
           </div>
-          <p id={errorId} role="alert" className="mt-2 min-h-5 text-sm text-warn-fg">
+          <p id={errorId} role="alert" className="mt-2 min-h-5 text-sm font-medium text-danger">
             {error}
           </p>
         </form>
 
         <div aria-live="polite">
           {result?.kind === "served" ? (
-            <div className="mt-2 rounded-xl bg-elevated p-4 text-sm leading-relaxed">
+            <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="flex items-center gap-2 font-medium text-fg">
                 <MapPin className="size-4 text-accent" aria-hidden="true" />
-                {result.zone.demo ? "Demo delivery to " : "We deliver to "}
-                {result.postalCode}
+                {result.zone.label} delivers to {result.postalCode}
               </p>
               <ul className="mt-2 space-y-1 text-muted">
                 <li>
-                  {result.zone.label} · about {result.zone.etaMinutes[0]}–
-                  {result.zone.etaMinutes[1]} min
+                  Delivery only · about {result.zone.etaMinutes[0]}–{result.zone.etaMinutes[1]} min
                 </li>
                 <li>
                   Delivery {formatPrice(result.zone.deliveryFee)}
@@ -134,34 +141,53 @@ export function LocationDialog() {
                 </li>
               </ul>
               {result.zone.demo ? (
-                <p className="mt-2 text-warn-fg">
+                <p className="mt-2 font-medium text-warn-fg">
                   Demo mode: these are example numbers. Nothing is sent or charged.
                 </p>
               ) : null}
-              <Button asChild className="mt-4 w-full">
-                <Link to="/menu" onClick={closeDialog}>
-                  Browse the menu
-                </Link>
-              </Button>
+              {onDish ? (
+                <Button className="mt-4 w-full" onClick={closeDialog}>
+                  Continue
+                </Button>
+              ) : (
+                <Button asChild className="mt-4 w-full">
+                  <Link to="/menu" onClick={closeDialog}>
+                    See the menu
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : null}
 
           {result?.kind === "unserved" ? (
-            <div className="mt-2 rounded-xl bg-elevated p-4 text-sm leading-relaxed">
+            <div className="mt-2 rounded-xl bg-sunken p-4 text-sm leading-relaxed">
               <p className="font-medium text-fg">
-                We’re not delivering to {result.postalCode} yet.
+                No kitchen delivers to {result.postalCode} yet.
               </p>
               <p className="mt-1 text-muted">
                 {ORDERING_LIVE
-                  ? "Your area isn’t covered yet."
-                  : "No kitchen is open yet, so we can’t deliver anywhere yet."}{" "}
-                You can still browse every dish and see exactly what’s in it.
+                  ? "Your area isn’t covered by a kitchen yet."
+                  : "No kitchen is open yet, so nothing can be delivered."}{" "}
+                You can still browse every dish and see exactly what’s in it, or try ordering in
+                demo mode.
               </p>
-              <Button asChild variant="secondary" className="mt-4 w-full">
-                <Link to="/menu" onClick={closeDialog}>
-                  Browse the menu
-                </Link>
-              </Button>
+              <div className="mt-4 grid gap-2">
+                <Button
+                  variant="warn"
+                  className="w-full"
+                  onClick={() => {
+                    setDemo(true);
+                    setChecked(result.postalCode);
+                  }}
+                >
+                  Try it in demo mode
+                </Button>
+                <Button asChild variant="secondary" className="w-full">
+                  <Link to="/menu" onClick={closeDialog}>
+                    Browse the menu
+                  </Link>
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>

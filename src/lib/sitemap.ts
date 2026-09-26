@@ -1,7 +1,10 @@
 import { cuisines, dishes } from "./food/data.ts";
 import { SITE_URL } from "./site.ts";
 
-/** Pages worth indexing. Checkout and order pages are left out on purpose. */
+/**
+ * Pages worth indexing. Checkout, order and saved pages are personal or
+ * transactional and left out on purpose.
+ */
 export const STATIC_PATHS = ["/", "/menu", "/ingredients", "/delivery"] as const;
 
 export function sitemapPaths(): string[] {

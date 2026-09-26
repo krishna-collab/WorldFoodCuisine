@@ -3,21 +3,40 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#09090b" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#f7f2ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15120e" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="robots" content="noindex" />
     <title>You’re offline · WorldFoodCuisine</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <style>
+      /* Same tokens as src/styles.css (light, then dark). */
       :root {
-        color-scheme: dark;
-        --bg: #09090b;
-        --surface: #121214;
-        --fg: #f4f1ea;
-        --muted: #9a9590;
-        --primary: #e8e4dc;
-        --primary-fg: #12110f;
-        --accent: #e2a13a;
+        color-scheme: light dark;
+        --bg: #f7f2ea;
+        --surface: #fffdf8;
+        --fg: #1d1a16;
+        --muted: #574f45;
+        --primary: #1d1a16;
+        --primary-fg: #fffdf8;
+        --accent: #a63f1c;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #15120e;
+          --surface: #1d1914;
+          --fg: #f3ede3;
+          --muted: #c2b8a9;
+          --primary: #f3ede3;
+          --primary-fg: #15120e;
+          --accent: #e58b62;
+        }
+      }
+      @font-face {
+        font-family: "Fraunces";
+        font-display: swap;
+        font-weight: 100 900;
+        src: url("/fonts/fraunces-latin-opsz-normal.woff2") format("woff2");
       }
       * {
         box-sizing: border-box;
@@ -57,6 +76,8 @@
       }
       h1 {
         margin: 0;
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 560;
         font-size: clamp(1.75rem, 6vw, 2.5rem);
         line-height: 1.15;
         letter-spacing: -0.01em;
@@ -78,7 +99,7 @@
       a.button {
         min-height: 2.75rem;
         padding: 0 1.25rem;
-        border-radius: 0.5rem;
+        border-radius: 999px;
         border: 0;
         font: inherit;
         font-weight: 600;

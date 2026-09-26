@@ -2,9 +2,16 @@
 @import "tw-animate-css";
 
 /*
- * Self-hosted variable fonts (SIL Open Font License, see public/fonts/*-OFL.txt).
- * No third-party request, and the service worker keeps them for offline use.
- * The Latin files are preloaded in src/routes/__root.tsx.
+ * WorldFoodCuisine design system. docs/DESIGN-SYSTEM.md explains each token.
+ *
+ * Direction: an editorial food magazine that works like an app. Warm paper,
+ * ink and one terracotta accent; a warm serif for headlines (Fraunces), a
+ * plain sans for everything you read or tap (Manrope). Expressive type and
+ * photography for discovery; quiet, predictable controls for ordering.
+ *
+ * Fonts are self-hosted (SIL Open Font License, see public/fonts/*-OFL.txt):
+ * no third-party request, and the service worker keeps them offline. The
+ * Latin files are preloaded in src/routes/__root.tsx.
  */
 @font-face {
   font-family: "Manrope";
@@ -28,63 +35,161 @@
     U+A720-A7FF;
 }
 @font-face {
-  font-family: "Syne";
+  font-family: "Fraunces";
   font-style: normal;
   font-display: swap;
-  font-weight: 400 800;
-  src: url("/fonts/syne-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  src: url("/fonts/fraunces-latin-opsz-normal.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: "Syne";
+  font-family: "Fraunces";
   font-style: normal;
   font-display: swap;
-  font-weight: 400 800;
-  src: url("/fonts/syne-latin-ext-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  src: url("/fonts/fraunces-latin-ext-opsz-normal.woff2") format("woff2");
   unicode-range:
     U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
     U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
     U+A720-A7FF;
 }
+/* Metric-matched fallback so the serif swap doesn't shift headlines (CLS). */
+@font-face {
+  font-family: "Fraunces Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 104%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
 
 @theme {
-  --color-bg: #09090b;
-  --color-surface: #121214;
-  --color-elevated: #1a1a1d;
-  --color-fg: #f4f1ea;
-  --color-muted: #9a9590;
-  /* ≥ 4.5:1 on bg, surface and elevated (WCAG AA for small text). */
-  --color-subtle: #8e8983;
-  --color-primary: #e8e4dc;
-  --color-primary-fg: #12110f;
-  /* Turmeric: highlights, focus and "not yet" states. */
-  --color-accent: #e2a13a;
-  --color-accent-fg: #1a1206;
-  --color-warn-bg: #2a2110;
-  --color-warn-fg: #f3c969;
-  --color-border: #2a2826;
-  --color-ring: #e2a13a;
+  /* Color: light theme. Dark values are below; contrast is AA or better. */
+  --color-bg: #f7f2ea;
+  --color-surface: #fffdf8;
+  --color-sunken: #efe7da;
+  --color-fg: #1d1a16;
+  --color-muted: #574f45;
+  --color-subtle: #6b6257;
+  --color-border: #e0d6c6;
+  --color-border-strong: #c9bba6;
+  /* Outlines of inputs, checkboxes and steppers: 3:1 or more on every surface. */
+  --color-control: #857865;
+  --color-primary: #1d1a16;
+  --color-primary-fg: #fffdf8;
+  /* Terracotta: brand accent, links in running text, focus ring. */
+  --color-accent: #a63f1c;
+  --color-accent-fg: #fffdf8;
+  /* The two paths: herb green for cooking, clay for prepared food. */
+  --color-herb: #2d5a41;
+  --color-herb-fg: #fffdf8;
+  --color-herb-soft: #e3ece4;
+  --color-clay: #a63f1c;
+  --color-clay-fg: #fffdf8;
+  --color-clay-soft: #f6e3d8;
+  /* Honest-status color: demo mode, "not yet", things to double-check. */
+  --color-warn-bg: #fbefd0;
+  --color-warn-fg: #5e4100;
+  --color-warn-border: #e8cf8f;
+  --color-danger: #a3261b;
+  --color-success: #2d5a41;
+  --color-ring: #a63f1c;
+  --color-scrim: rgb(29 26 22 / 0.55);
+
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
-  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --shadow-border-hover: 0 0 0 1px rgba(255, 255, 255, 0.16);
+  --font-display: "Fraunces", "Fraunces Fallback", Georgia, ui-serif, serif;
+
+  /* Type scale. Display sizes are fluid between a 390px phone and 1440px. */
+  --text-display-xl: clamp(2.375rem, 1.5rem + 3.6vw, 4.75rem);
+  --text-display-xl--line-height: 1;
+  --text-display-xl--letter-spacing: -0.025em;
+  --text-display-l: clamp(2rem, 1.45rem + 2.3vw, 3.5rem);
+  --text-display-l--line-height: 1.04;
+  --text-display-l--letter-spacing: -0.02em;
+  --text-display-m: clamp(1.625rem, 1.3rem + 1.35vw, 2.5rem);
+  --text-display-m--line-height: 1.1;
+  --text-display-m--letter-spacing: -0.015em;
+  --text-display-s: clamp(1.25rem, 1.12rem + 0.55vw, 1.625rem);
+  --text-display-s--line-height: 1.2;
+  --text-display-s--letter-spacing: -0.01em;
+  --text-lede: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --text-lede--line-height: 1.6;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.3;
+  --text-eyebrow--letter-spacing: 0.14em;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  --shadow-hairline: 0 0 0 1px var(--color-border);
+  --shadow-control: 0 0 0 1px var(--color-control);
+  --shadow-raised: 0 1px 2px rgb(29 26 22 / 0.06), 0 8px 24px -12px rgb(29 26 22 / 0.18);
+  --shadow-sheet: 0 -8px 40px -12px rgb(29 26 22 / 0.35);
+
+  /* Motion: short and eased; everything collapses under reduced motion. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-quick: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #15120e;
+    --color-surface: #1d1914;
+    --color-sunken: #27221b;
+    --color-fg: #f3ede3;
+    --color-muted: #c2b8a9;
+    --color-subtle: #a89d8d;
+    --color-border: #3a332a;
+    --color-border-strong: #51483c;
+    --color-control: #857a6a;
+    --color-primary: #f3ede3;
+    --color-primary-fg: #15120e;
+    --color-accent: #e58b62;
+    --color-accent-fg: #15120e;
+    --color-herb: #8fc7a2;
+    --color-herb-fg: #15120e;
+    --color-herb-soft: #1f2d24;
+    --color-clay: #e58b62;
+    --color-clay-fg: #15120e;
+    --color-clay-soft: #33211a;
+    --color-warn-bg: #3a2c0f;
+    --color-warn-fg: #f4d07e;
+    --color-warn-border: #6b5220;
+    --color-danger: #f08a7e;
+    --color-success: #8fc7a2;
+    --color-ring: #e58b62;
+    --color-scrim: rgb(0 0 0 / 0.6);
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --shadow-sheet: 0 -8px 40px -12px rgb(0 0 0 / 0.7);
+  }
 }
 
 @layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     background: var(--color-bg);
     color: var(--color-fg);
-    scroll-padding-top: 5rem;
+    scroll-padding-top: 6rem;
+  }
+
+  /* Keep focused and linked-to things clear of pinned bars (WCAG 2.4.11). */
+  @media (width < 64rem) {
+    html:has([data-sticky-search]) {
+      scroll-padding-top: 9rem;
+    }
   }
 
   body {
@@ -101,9 +206,12 @@
 
   h1,
   h2,
-  h3 {
+  h3,
+  [class*="text-display-"] {
     text-wrap: balance;
     font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 560;
   }
 
   p {
@@ -121,12 +229,50 @@
   }
 
   img.food-frame {
-    outline: 1px solid rgba(255, 255, 255, 0.1);
+    outline: 1px solid rgb(29 26 22 / 0.06);
     outline-offset: -1px;
   }
 
   dialog::backdrop {
-    background: rgb(9 9 11 / 0.75);
+    background: var(--color-scrim);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer components {
+  /* Small caps label above headings: "NEPAL · NEWAR". */
+  .eyebrow {
+    font-size: var(--text-eyebrow);
+    line-height: var(--text-eyebrow--line-height);
+    letter-spacing: var(--text-eyebrow--letter-spacing);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* Link inside running text. */
+  .text-link {
+    color: var(--color-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--duration-quick) ease;
+  }
+  .text-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Hairline rule used between editorial sections instead of boxes. */
+  .rule {
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Numbers that line up in prices, timers and quantities. */
+  .nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -150,18 +296,31 @@
       );
     }
   }
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Declared with @utility so variants work (lg:gutter, lg:px-0). */
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+@utility px-safe {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  @media (width >= 40rem) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
   }
-  .px-safe {
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+}
+/* Page gutter shared by every section: 16px phones, 24px tablets, 40px desktops. */
+@utility gutter {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  @media (width >= 40rem) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
-  @media (min-width: 40rem) {
-    .px-safe {
-      padding-left: max(1.5rem, env(safe-area-inset-left));
-      padding-right: max(1.5rem, env(safe-area-inset-right));
-    }
+  @media (width >= 80rem) {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
   }
 }
 
@@ -179,7 +338,7 @@
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -188,15 +347,34 @@
 }
 
 .rise {
-  animation: rise 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise var(--duration-slow) var(--ease-out-quint) both;
 }
-
 .rise-2 {
-  animation-delay: 80ms;
+  animation-delay: 70ms;
 }
 .rise-3 {
-  animation-delay: 160ms;
+  animation-delay: 140ms;
 }
 .rise-4 {
-  animation-delay: 240ms;
+  animation-delay: 210ms;
+}
+
+/* Skeleton shimmer for content that waits on the browser (bag, saved dishes). */
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-sunken) 25%,
+    color-mix(in srgb, var(--color-sunken) 60%, var(--color-surface)) 50%,
+    var(--color-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
 }

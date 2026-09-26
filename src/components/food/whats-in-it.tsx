@@ -1,8 +1,10 @@
-import { allergenLabels, dietLabels, spiceLabel } from "@/lib/food/data";
+import { describeRecord } from "@/lib/food/content";
+import { allergenLabels, dietLabels } from "@/lib/food/data";
 import type { Dish } from "@/lib/food/types";
+import { SpiceMeter } from "./dish-facts";
 
 /** "Timur (Nepali Sichuan pepper)" → name plus a quieter gloss. */
-function Ingredient({ text }: { text: string }) {
+export function Ingredient({ text }: { text: string }) {
   const match = text.match(/^(.*?)\s*\((.*)\)\s*$/);
   if (!match) return <>{text}</>;
   return (
@@ -12,31 +14,63 @@ function Ingredient({ text }: { text: string }) {
   );
 }
 
+/**
+ * Everything a dish is made of, component by component, plus the facts
+ * people check before eating: allergens, cooking fat, diet and heat, and
+ * whether those have been confirmed.
+ */
 export function WhatsInIt({ dish }: { dish: Dish }) {
   const allergens = dish.allergens.map((a) => allergenLabels[a]);
   const diet = dish.diet.map((d) => dietLabels[d]);
 
   return (
-    <section aria-labelledby="whats-in-it" className="mt-14">
-      <h2 id="whats-in-it" className="font-display text-2xl font-semibold tracking-tight">
-        What’s in it
-      </h2>
-      <p className="mt-2 max-w-2xl text-muted">
-        Every ingredient, component by component, including each spice in the blends.
-      </p>
+    <section aria-labelledby="whats-in-it" className="scroll-mt-24">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 id="whats-in-it" className="text-display-m">
+          What’s in it
+        </h2>
+        <p className="text-sm text-muted">Every ingredient, including each spice in the blends</p>
+      </div>
 
-      <div className="mt-6 gap-4 md:columns-2">
+      <dl className="mt-6 grid gap-px overflow-hidden rounded-2xl bg-border shadow-[var(--shadow-hairline)] sm:grid-cols-2 lg:grid-cols-4">
+        <div className="bg-surface p-5 sm:col-span-2 lg:col-span-1">
+          <dt className="eyebrow text-subtle">Allergens</dt>
+          <dd className="mt-2 font-semibold">
+            {allergens.length > 0 ? allergens.join(", ") : "None of the nine major allergens"}
+          </dd>
+          <dd className="mt-1 text-xs leading-relaxed text-subtle">
+            {describeRecord(dish.content.allergens)}. Worked out from the ingredient list.
+          </dd>
+        </div>
+        <div className="bg-surface p-5">
+          <dt className="eyebrow text-subtle">Cooked in</dt>
+          <dd className="mt-2 font-semibold">
+            {dish.cookedIn.length > 0 ? dish.cookedIn.join(", ") : "No added cooking fat"}
+          </dd>
+        </div>
+        <div className="bg-surface p-5">
+          <dt className="eyebrow text-subtle">Diet</dt>
+          <dd className="mt-2 font-semibold">
+            {diet.length > 0 ? diet.join(", ") : "Contains meat, poultry or seafood"}
+          </dd>
+        </div>
+        <div className="bg-surface p-5">
+          <dt className="eyebrow text-subtle">Heat</dt>
+          <dd className="mt-2 font-semibold">
+            <SpiceMeter level={dish.spice} />
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-8 gap-x-10 md:columns-2 xl:columns-3">
         {dish.parts.map((part) => (
-          <div
-            key={part.label}
-            className="mb-4 break-inside-avoid rounded-2xl bg-surface p-5 shadow-[var(--shadow-border)]"
-          >
-            <h3 className="text-sm font-semibold tracking-wide text-accent uppercase">
+          <div key={part.label} className="mb-8 break-inside-avoid">
+            <h3 className="border-b border-fg pb-2 font-sans text-sm font-bold tracking-wide uppercase">
               {part.label}
             </h3>
-            <ul className="mt-3 space-y-1.5 text-[0.9375rem] leading-relaxed">
+            <ul className="mt-2 divide-y divide-border text-[0.9375rem] leading-relaxed">
               {part.items.map((item) => (
-                <li key={item}>
+                <li key={item} className="py-1.5">
                   <Ingredient text={item} />
                 </li>
               ))}
@@ -45,34 +79,10 @@ export function WhatsInIt({ dish }: { dish: Dish }) {
         ))}
       </div>
 
-      <dl className="grid gap-4 rounded-2xl bg-surface p-5 shadow-[var(--shadow-border)] sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <dt className="text-sm text-subtle">Cooked in</dt>
-          <dd className="mt-1 font-medium">
-            {dish.cookedIn.length > 0 ? dish.cookedIn.join(", ") : "No added cooking fat"}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-subtle">Allergens</dt>
-          <dd className="mt-1 font-medium">
-            {allergens.length > 0 ? allergens.join(", ") : "None of the nine major allergens"}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-subtle">Diet</dt>
-          <dd className="mt-1 font-medium">
-            {diet.length > 0 ? diet.join(", ") : "Contains meat, poultry or seafood"}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-subtle">Heat</dt>
-          <dd className="mt-1 font-medium">{spiceLabel[dish.spice]}</dd>
-        </div>
-      </dl>
-
-      <p className="mt-4 max-w-3xl text-sm leading-relaxed text-subtle">
-        No preservatives or chemical additives. Recipes are still being finalized, and allergens
-        will be confirmed with the kitchen before any dish goes on sale.
+      <p className="max-w-3xl text-sm leading-relaxed text-subtle">
+        No preservatives or chemical additives. Ingredients: {describeRecord(dish.content.ingredients).toLowerCase()}.
+        Allergens will be confirmed with the kitchen before any dish goes on sale, together with a
+        statement on shared equipment.
       </p>
     </section>
   );

@@ -3,6 +3,29 @@
 > **How to use:** keep this file in the repo root. Fill in §0.3 ("What only you can answer"), then tell your coding agent:
 > *"Read REDESIGN.md and start Phase 0."* In later sessions: *"Continue with the next phase in REDESIGN.md."*
 
+## Status (26 Sep 2026): delivery-only ordering
+
+The owner's direction: WorldFoodCuisine is an app for ordering food from its
+franchise kitchens in different locations. The kitchens only cook and
+deliver; there is no dine-in. So the "Cook it" path, the guided recipe, cook
+mode, timers and the shopping list from the 25 Sep pass are gone, and the site
+is about finding your kitchen and ordering from it:
+
+- **Your ZIP picks the kitchen.** Each kitchen (a delivery zone in
+  `src/lib/ordering/zones.ts`) has its own delivery area, hours, fees, tax,
+  menu for the day and, where it differs, its own prices. The kitchen's name
+  shows wherever a price does. Two labeled demo kitchens (West for ZIPs
+  starting with 8 or 9, East for the rest) show how menus, prices and fees
+  differ; no real kitchen is open yet.
+- **Pages:** the home page leads with "World food, cooked to order and
+  delivered" and how ordering works; dish pages put ordering right under the
+  dish; the menu filters by what your kitchen has on today and sorts by price;
+  a Locations page lists kitchens (and the demo ones).
+- **Kept from the 25 Sep pass:** the design system (`docs/DESIGN-SYSTEM.md`),
+  filters and search, cuisine pages, demo checkout with every cost before
+  placing and no card fields, content provenance, labeled images, offline
+  saved dishes and bag, and `npm run qa`.
+
 ## Status (24 Sep 2026)
 
 Phases 0–2 and the trust, ordering, responsive, PWA and SEO work were done in
